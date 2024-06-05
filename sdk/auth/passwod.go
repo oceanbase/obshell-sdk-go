@@ -17,9 +17,9 @@
 package auth
 
 import (
-	"github.com/obshell-sdk-go/log"
-	"github.com/obshell-sdk-go/sdk/request"
-	"github.com/obshell-sdk-go/util"
+	"github.com/oceanbase/obshell-sdk-go/log"
+	"github.com/oceanbase/obshell-sdk-go/sdk/request"
+	"github.com/oceanbase/obshell-sdk-go/util"
 )
 
 // PasswordAuth is a struct that implements Auther interface.

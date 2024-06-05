@@ -28,7 +28,7 @@ You can choose to create a single-version client.
 package main
 
 import (
-	"github.com/obshell-sdk-go/services/v1"
+	"github.com/oceanbase/obshell-sdk-go/services/v1"
 )
 
 func main() {
@@ -44,7 +44,7 @@ Or create a multi-version client set.
 package main
 
 import (
-	"github.com/obshell-sdk-go/services"
+	"github.com/oceanbase/obshell-sdk-go/services"
 )
 
 func main() {
@@ -61,7 +61,7 @@ package main
 
 import (
     "fmt"
-	"github.com/obshell-sdk-go/services/v1"
+	"github.com/oceanbase/obshell-sdk-go/services/v1"
 )
 
 func main() {
@@ -114,7 +114,7 @@ func main() {
 package main
 
 import (
-	"github.com/obshell-sdk-go/services/v1"
+	"github.com/oceanbase/obshell-sdk-go/services/v1"
 )
 
 func main() {

@@ -27,7 +27,7 @@ go get github.com/obshell/obshell-sdk-go
 package main
 
 import (
-	"github.com/obshell-sdk-go/services/v1"
+	"github.com/oceanbase/obshell-sdk-go/services/v1"
 )
 
 func main() {
@@ -43,7 +43,7 @@ func main() {
 package main
 
 import (
-	"github.com/obshell-sdk-go/services"
+	"github.com/oceanbase/obshell-sdk-go/services"
 )
 
 func main() {
@@ -60,7 +60,7 @@ package main
 
 import (
     "fmt"
-	"github.com/obshell-sdk-go/services/v1"
+	"github.com/oceanbase/obshell-sdk-go/services/v1"
 )
 
 func main() {
@@ -113,7 +113,7 @@ func main() {
 package main
 
 import (
-	"github.com/obshell-sdk-go/services/v1"
+	"github.com/oceanbase/obshell-sdk-go/services/v1"
 )
 
 func main() {

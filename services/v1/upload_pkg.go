@@ -24,8 +24,8 @@ import (
 	"path/filepath"
 	"time"
 
-	"github.com/obshell-sdk-go/sdk/request"
-	"github.com/obshell-sdk-go/sdk/response"
+	"github.com/oceanbase/obshell-sdk-go/sdk/request"
+	"github.com/oceanbase/obshell-sdk-go/sdk/response"
 )
 
 type UploadPkgRequest struct {

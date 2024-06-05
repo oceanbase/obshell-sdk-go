@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
- package util
+package util
 
 import (
 	"fmt"
@@ -22,7 +22,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/obshell-sdk-go/model"
+	"github.com/oceanbase/obshell-sdk-go/model"
 )
 
 func isValidIp(ip string) bool {
