@@ -30,8 +30,8 @@ import (
 
 	"github.com/pkg/errors"
 
-	"github.com/obshell-sdk-go/sdk/request"
-	"github.com/obshell-sdk-go/util"
+	"github.com/oceanbase/obshell-sdk-go/sdk/request"
+	"github.com/oceanbase/obshell-sdk-go/util"
 )
 
 type PasswordAuthV2 struct {

@@ -16,7 +16,7 @@
 
 package auth
 
-import "github.com/obshell-sdk-go/sdk/option"
+import "github.com/oceanbase/obshell-sdk-go/sdk/option"
 
 type AuthOption struct {
 	*option.BaseOption

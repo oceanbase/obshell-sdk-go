@@ -17,9 +17,9 @@
 package v1
 
 import (
-	"github.com/obshell-sdk-go/sdk"
-	"github.com/obshell-sdk-go/sdk/auth"
-	"github.com/obshell-sdk-go/sdk/option"
+	"github.com/oceanbase/obshell-sdk-go/sdk"
+	"github.com/oceanbase/obshell-sdk-go/sdk/auth"
+	"github.com/oceanbase/obshell-sdk-go/sdk/option"
 )
 
 type Client struct {

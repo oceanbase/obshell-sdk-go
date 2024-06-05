@@ -16,7 +16,7 @@
 
 package response
 
-import "github.com/obshell-sdk-go/model"
+import "github.com/oceanbase/obshell-sdk-go/model"
 
 type TaskResponse struct {
 	*OcsAgentResponse

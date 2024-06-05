@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
- package v2
+package v2
 
-import "github.com/obshell-sdk-go/sdk"
+import "github.com/oceanbase/obshell-sdk-go/sdk"
 
 type Client struct {
 	*sdk.Client

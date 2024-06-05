@@ -19,7 +19,7 @@ package auth
 import (
 	"errors"
 
-	"github.com/obshell-sdk-go/sdk/request"
+	"github.com/oceanbase/obshell-sdk-go/sdk/request"
 )
 
 // auth version

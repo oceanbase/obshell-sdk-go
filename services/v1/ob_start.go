@@ -19,9 +19,9 @@ package v1
 import (
 	"github.com/pkg/errors"
 
-	"github.com/obshell-sdk-go/model"
-	"github.com/obshell-sdk-go/sdk/request"
-	"github.com/obshell-sdk-go/sdk/response"
+	"github.com/oceanbase/obshell-sdk-go/model"
+	"github.com/oceanbase/obshell-sdk-go/sdk/request"
+	"github.com/oceanbase/obshell-sdk-go/sdk/response"
 )
 
 type StartRequest struct {

@@ -17,9 +17,9 @@
 package services
 
 import (
-	"github.com/obshell-sdk-go/sdk/option"
-	v1 "github.com/obshell-sdk-go/services/v1"
-	v2 "github.com/obshell-sdk-go/services/v2"
+	"github.com/oceanbase/obshell-sdk-go/sdk/option"
+	v1 "github.com/oceanbase/obshell-sdk-go/services/v1"
+	v2 "github.com/oceanbase/obshell-sdk-go/services/v2"
 )
 
 type Clientset struct {

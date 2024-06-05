@@ -20,8 +20,8 @@ import (
 	"encoding/json"
 	"time"
 
-	"github.com/obshell-sdk-go/sdk/request"
-	"github.com/obshell-sdk-go/util"
+	"github.com/oceanbase/obshell-sdk-go/sdk/request"
+	"github.com/oceanbase/obshell-sdk-go/util"
 )
 
 type PasswordAuthV1 struct {

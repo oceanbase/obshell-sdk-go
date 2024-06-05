@@ -19,7 +19,7 @@ package v1
 import (
 	"errors"
 
-	"github.com/obshell-sdk-go/model"
+	"github.com/oceanbase/obshell-sdk-go/model"
 )
 
 const (

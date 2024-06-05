@@ -16,7 +16,7 @@
 
 package sdk
 
-import "github.com/obshell-sdk-go/sdk/auth"
+import "github.com/oceanbase/obshell-sdk-go/sdk/auth"
 
 func WithPasswordAuth(pwd string) auth.AuthOption {
 	return auth.WithPasswordAuth(pwd)

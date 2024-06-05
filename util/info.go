@@ -22,8 +22,8 @@ import (
 	"io"
 	"net/http"
 
-	"github.com/obshell-sdk-go/log"
-	"github.com/obshell-sdk-go/model"
+	"github.com/oceanbase/obshell-sdk-go/log"
+	"github.com/oceanbase/obshell-sdk-go/model"
 )
 
 // getPublicKey function retrieves the public key from the API
