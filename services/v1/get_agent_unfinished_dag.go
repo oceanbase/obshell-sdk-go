@@ -43,18 +43,6 @@ func (r *GetAgentUnfinishedDagsRequest) SetShowDetail(showDetail bool) *GetAgent
 	return r
 }
 
-type getAgentUnfinishedDagsResponse struct {
-	*response.OcsAgentResponse
-	Dags []*model.DagDetailDTO `json:"contents"`
-}
-
-func (c *Client) creatGetAgentUnfinishedDagsResponse() *getAgentUnfinishedDagsResponse {
-	return &getAgentUnfinishedDagsResponse{
-		OcsAgentResponse: response.NewOcsAgentResponse(),
-		Dags:             make([]*model.DagDetailDTO, 0),
-	}
-}
-
 // GetAgentUnfinishedDags returns a []*DagDetailDTO and an error.
 // If the error is non-nil, the []*DagDetailDTO will be empty.
 // If you don't want to show detail of the dag, you can need to create a GetAgentUnfinishedDagsRequest and call SetShowDetail(false).
@@ -67,7 +55,7 @@ func (c *Client) GetAgentUnfinishedDags() (dags []*model.DagDetailDTO, err error
 // If the error is non-nil, the []*DagDetailDTO will be empty.
 // If you don't to show detail of the dag, you can need to create a GetAgentUnfinishedDagsRequest and call SetShowDetail(false).
 func (c *Client) GetAgentUnfinishedDagsWithRequest(req *GetAgentUnfinishedDagsRequest) (dags []*model.DagDetailDTO, err error) {
-	response := c.creatGetAgentUnfinishedDagsResponse()
-	err = c.Execute(req, response)
-	return response.Dags, err
+	resp := response.NewMutilTaskReponse()
+	err = c.Execute(req, resp)
+	return resp.Contents, err
 }

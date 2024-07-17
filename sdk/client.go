@@ -261,6 +261,7 @@ func (c *Client) realExecute(request request.Request, response responselib.Respo
 			return err
 		}
 	}
+	response.Init()
 	req.SetResult(response)
 	req.
 		SetHeader("Content-Type", "application/json").
@@ -289,5 +290,11 @@ func (c *Client) realExecute(request request.Request, response responselib.Respo
 	if err != nil {
 		return errors.Wrap(err, "request failed")
 	}
-	return responselib.Unmarshal(response, resp)
+	if resp.IsError() {
+		if response != nil {
+			return response.GetError()
+		}
+		return errors.New("http response error")
+	}
+	return nil
 }

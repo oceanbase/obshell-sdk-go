@@ -40,9 +40,12 @@ type GetStatusResponse struct {
 	*model.AgentStatus
 }
 
+func (r *GetStatusResponse) Init() {}
+
 func (c *Client) createGetStatusResponse() *GetStatusResponse {
 	return &GetStatusResponse{
 		OcsAgentResponse: response.NewOcsAgentResponse(),
+		AgentStatus:      &model.AgentStatus{},
 	}
 }
 

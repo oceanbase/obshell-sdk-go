@@ -26,6 +26,7 @@ type TaskResponse struct {
 func NewTaskResponse() *TaskResponse {
 	resp := &TaskResponse{
 		OcsAgentResponse: NewOcsAgentResponse(),
+		DagDetailDTO:     &model.DagDetailDTO{},
 	}
 	return resp
 }
@@ -40,4 +41,29 @@ func NewOcsAgentResponse() *OcsAgentResponse {
 func NewOcsAgentResponseWithoutReturn() *OcsAgentResponse {
 	resp := &OcsAgentResponse{}
 	return resp
+}
+
+func (t *TaskResponse) Init() {
+	t.Data = t.DagDetailDTO
+}
+
+type IterableDagDetailDTO struct {
+	Contents []*model.DagDetailDTO `json:"contents"`
+}
+
+type MutilTaskReponse struct {
+	*OcsAgentResponse
+	*IterableDagDetailDTO
+}
+
+func NewMutilTaskReponse() *MutilTaskReponse {
+	resp := &MutilTaskReponse{
+		OcsAgentResponse:     NewOcsAgentResponse(),
+		IterableDagDetailDTO: &IterableDagDetailDTO{},
+	}
+	return resp
+}
+
+func (r *MutilTaskReponse) Init() {
+	r.Data = r.IterableDagDetailDTO
 }

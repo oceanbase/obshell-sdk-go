@@ -17,13 +17,8 @@
 package response
 
 import (
-	"encoding/json"
-	"errors"
 	"fmt"
-	"reflect"
 	"time"
-
-	"github.com/go-resty/resty/v2"
 )
 
 type Response interface {
@@ -31,6 +26,7 @@ type Response interface {
 	GetData() interface{}
 	GetError() error
 	isExpectReturn() bool
+	Init()
 }
 
 const (
@@ -88,49 +84,6 @@ func (a ApiError) String() string {
 
 func (a *ApiError) IsError(errorCode int) bool {
 	return a.Code == errorCode
-}
-
-func Unmarshal(response Response, httpResponse *resty.Response) error {
-	if httpResponse.IsError() {
-		if response != nil {
-			return response.GetError()
-		}
-		return errors.New("http response error")
-	}
-	if response.isExpectReturn() {
-		responseMap, ok := response.GetData().(map[string]interface{})
-		if !ok {
-			return errors.New("response data is not map")
-		}
-		if len(responseMap) == 0 {
-			return errors.New("response data is empty")
-		}
-
-		data, err := json.Marshal(responseMap)
-		if err != nil {
-			return err
-		}
-
-		if err = unmarshal(data, response); err != nil {
-			return err
-		}
-	}
-	return nil
-}
-
-func unmarshal(data []byte, ret interface{}) error {
-	if reflect.TypeOf(ret).Elem().Kind() == reflect.Slice {
-		iterableData := IterableData{}
-		err := json.Unmarshal(data, &iterableData)
-		if err != nil {
-			return err
-		}
-		data, err = json.Marshal(iterableData.Contents)
-		if err != nil {
-			return err
-		}
-	}
-	return json.Unmarshal(data, ret)
 }
 
 // iterable data struct

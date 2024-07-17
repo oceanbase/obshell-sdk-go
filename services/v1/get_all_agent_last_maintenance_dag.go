@@ -43,18 +43,6 @@ func (r *GetAllAgentLastMaintenanceDagRequest) SetShowDetail(showDetail bool) *G
 	return r
 }
 
-type getAllAgentLastMaintenanceDagResponse struct {
-	*response.OcsAgentResponse
-	Dags []*model.DagDetailDTO `json:"contents"`
-}
-
-func (c *Client) createGetAllAgentLastMaintenanceDagResponse() *getAllAgentLastMaintenanceDagResponse {
-	return &getAllAgentLastMaintenanceDagResponse{
-		OcsAgentResponse: response.NewOcsAgentResponse(),
-		Dags:             make([]*model.DagDetailDTO, 0),
-	}
-}
-
 // GetAllAgentLastMaintenanceDag returns a []*DagDetailDTO and an error.
 // If the error is non-nil, the []*DagDetailDTO will be empty.
 // If you don't want to show detail of the dag, you can need to create a GetAllAgentLastMaintenanceDagRequest and call SetShowDetail(false).
@@ -69,7 +57,7 @@ func (c *Client) GetAllAgentLastMaintenanceDag() (dags []*model.DagDetailDTO, er
 // If you don't want to show detail of the dag, you can need to create a GetAllAgentLastMaintenanceDagRequest and call SetShowDetail(false).
 // Notice: versions of obshell prior to 4.2.3 do not support this method.
 func (c *Client) GetAllAgentLastMaintenanceDagWithRequest(req *GetAllAgentLastMaintenanceDagRequest) (dags []*model.DagDetailDTO, err error) {
-	response := c.createGetAllAgentLastMaintenanceDagResponse()
-	err = c.Execute(req, response)
-	return response.Dags, err
+	resp := response.NewMutilTaskReponse()
+	err = c.Execute(req, resp)
+	return resp.Contents, err
 }

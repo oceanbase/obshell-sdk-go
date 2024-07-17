@@ -41,9 +41,14 @@ type getObInfoResponse struct {
 	*model.ObInfoResp
 }
 
+func (r *getObInfoResponse) Init() {
+	r.Data = r.ObInfoResp
+}
+
 func (c *Client) createGetObInfoResponse() *getObInfoResponse {
 	return &getObInfoResponse{
 		OcsAgentResponse: response.NewOcsAgentResponse(),
+		ObInfoResp:       &model.ObInfoResp{},
 	}
 }
 

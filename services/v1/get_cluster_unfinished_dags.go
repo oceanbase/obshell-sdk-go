@@ -45,18 +45,6 @@ func (req *GetClusterUnfinishedDagsRequest) SetShowDetail(showDetail bool) {
 	})
 }
 
-type getClusterUnfinishedDagsResponse struct {
-	*response.OcsAgentResponse
-	Dags []*model.DagDetailDTO `json:"contents"`
-}
-
-func (c *Client) creatGetClusterUnfinishedDagsResponse() *getClusterUnfinishedDagsResponse {
-	return &getClusterUnfinishedDagsResponse{
-		OcsAgentResponse: response.NewOcsAgentResponse(),
-		Dags:             make([]*model.DagDetailDTO, 0),
-	}
-}
-
 // GetClusterUnfinishedDags returns a []*DagDetailDTO and an error.
 // If the error is non-nil, the []*DagDetailDTO will be empty.
 // If you don't want to show detail of the dag, you can need to create a GetClusterUnfinishedDagsRequest and call SetShowDetail(false).
@@ -69,7 +57,7 @@ func (c *Client) GetClusterUnfinishedDags() (dag []*model.DagDetailDTO, err erro
 // If the error is non-nil, the []*DagDetailDTO will be empty.
 // If you don't want to show detail of the dag, you can need to create a GetClusterUnfinishedDagsRequest and call SetShowDetail(false).
 func (c *Client) GetClusterUnfinishedDagsWithRequest(req *GetClusterUnfinishedDagsRequest) (dag []*model.DagDetailDTO, err error) {
-	response := c.creatGetClusterUnfinishedDagsResponse()
-	err = c.Execute(req, response)
-	return response.Dags, err
+	resp := response.NewMutilTaskReponse()
+	err = c.Execute(req, resp)
+	return resp.Contents, err
 }

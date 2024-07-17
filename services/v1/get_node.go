@@ -48,9 +48,14 @@ type GetNodeResponse struct {
 	*model.NodeDetailDTO
 }
 
+func (r *GetNodeResponse) Init() {
+	r.Data = r.NodeDetailDTO
+}
+
 func (c *Client) createGetNodeResponse() *GetNodeResponse {
 	return &GetNodeResponse{
 		OcsAgentResponse: response.NewOcsAgentResponse(),
+		NodeDetailDTO:    &model.NodeDetailDTO{},
 	}
 }
 

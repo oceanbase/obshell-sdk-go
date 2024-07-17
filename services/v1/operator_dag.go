@@ -55,6 +55,8 @@ type OperateDagResponse struct {
 	*response.OcsAgentResponse
 }
 
+func (r *OperateDagResponse) Init() {}
+
 func (c *Client) createOperateDagResponse() *OperateDagResponse {
 	return &OperateDagResponse{
 		OcsAgentResponse: response.NewOcsAgentResponseWithoutReturn(),
