@@ -30,8 +30,8 @@ const (
 
 // obshell version
 const (
-	VERSION_4_2_2 = "4.2.2.0"
-	VERSION_4_2_3 = "4.2.3.0"
+	VERSION_4_2_2 = "4.2.2." // matching 4.2.2.* version
+	VERSION_4_2_3 = "4.2.3." // matching 4.2.3.* version
 )
 
 // auth type
