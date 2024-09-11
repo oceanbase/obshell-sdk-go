@@ -50,6 +50,10 @@ func (auth *PasswordAuthV2) Auth(req request.Request) error {
 	}
 	var err error
 
+	if err = auth.checkIdentity(req); err != nil {
+		return err
+	}
+
 	if auth.pk == "" {
 		auth.pk, err = util.GetPublicKey(req.GetServer())
 		if err != nil {
