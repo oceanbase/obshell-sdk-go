@@ -18,6 +18,8 @@ package auth
 
 import (
 	"errors"
+	"strconv"
+	"strings"
 
 	"github.com/oceanbase/obshell-sdk-go/sdk/request"
 )
@@ -29,10 +31,17 @@ const (
 )
 
 // obshell version
-const (
-	VERSION_4_2_2 = "4.2.2." // matching 4.2.2.* version
-	VERSION_4_2_3 = "4.2.3." // matching 4.2.3.* version
+var (
+	VERSION_4_2_2 = newAuthVersion("4.2.2.0")
+	VERSION_4_2_3 = newAuthVersion("4.2.3.0")
+	VERSION_4_2_4 = newAuthVersion("4.2.4.0")
 )
+
+func init() {
+	VERSION_4_2_2.SetVersion("4.2.2.0")
+	VERSION_4_2_3.SetVersion("4.2.3.0")
+	VERSION_4_2_4.SetVersion("4.2.4.0")
+}
 
 // auth type
 const (
@@ -58,6 +67,11 @@ type Versioner interface {
 	GetVersion() string
 	AutoSelectVersion(version ...string) bool
 	IsAutoSelectVersion() bool
+	Berfore(version string) bool
+	After(version string) bool
+	Equals(version string) bool
+	BeforeOrEquals(version string) bool
+	AfterOrEquals(version string) bool
 }
 
 type Auther interface {
@@ -121,6 +135,49 @@ func (authVersion *AuthVersion) AutoSelectVersion(version ...string) bool {
 
 func (authVersion *AuthVersion) IsAutoSelectVersion() bool {
 	return authVersion.isAutoSelect
+}
+
+func (authVersion *AuthVersion) Berfore(version string) bool {
+	return cmpVersionString(authVersion.version, version) < 0
+}
+
+func (authVersion *AuthVersion) After(version string) bool {
+	return cmpVersionString(authVersion.version, version) > 0
+}
+
+func (authVersion *AuthVersion) Equals(version string) bool {
+	return cmpVersionString(authVersion.version, version) == 0
+}
+
+func (authVersion *AuthVersion) BeforeOrEquals(version string) bool {
+	return cmpVersionString(authVersion.version, version) <= 0
+}
+
+func (authVersion *AuthVersion) AfterOrEquals(version string) bool {
+	return cmpVersionString(authVersion.version, version) >= 0
+}
+
+// cmpVersionString compare two version string, return 1 if ver1 > ver2, -1 if ver1 < ver2, 0 if ver1 == ver2
+func cmpVersionString(ver1, ver2 string) int {
+	if ver1 == ver2 {
+		return 0
+	}
+	ver1Arr := strings.Split(ver1, ".")
+	ver2Arr := strings.Split(ver2, ".")
+	for i := 0; i < len(ver1Arr) && i < len(ver2Arr); i++ {
+		v1, _ := strconv.Atoi(ver1Arr[i])
+		v2, _ := strconv.Atoi(ver2Arr[i])
+		if v1 > v2 {
+			return 1
+		} else if v1 < v2 {
+			return -1
+		}
+	}
+	if len(ver1Arr) > len(ver2Arr) {
+		return 1
+	} else {
+		return -1
+	}
 }
 
 // BaseAuth implements Versioner and Auther.GetMethod

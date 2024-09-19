@@ -19,7 +19,6 @@ package sdk
 import (
 	"fmt"
 	"reflect"
-	"strings"
 
 	"github.com/go-resty/resty/v2"
 	"github.com/pkg/errors"
@@ -142,7 +141,8 @@ func (c *Client) confirmAuthVersion() error {
 		if obshellauther == nil {
 			// Check agent version and auth version compatibility, if not compatible, return error.
 			// 4.2.2 only support v1, 4.2.3 only support v2
-			if !(c.auth.GetVersion() == auth.AUTH_V1 && strings.Contains(agentVersion, auth.VERSION_4_2_2) || c.auth.GetVersion() == auth.AUTH_V2 && strings.Contains(agentVersion, auth.VERSION_4_2_3)) {
+			if !(c.auth.GetVersion() == auth.AUTH_V1 && auth.VERSION_4_2_2.Equals(agentVersion) ||
+				c.auth.GetVersion() == auth.AUTH_V2 && auth.VERSION_4_2_3.BeforeOrEquals(agentVersion)) {
 				return errors.New("unsupported auth version of obshell")
 			}
 		} else {
@@ -154,10 +154,10 @@ func (c *Client) confirmAuthVersion() error {
 	}
 
 	var supportedAuth []string
-	if strings.Contains(agentVersion, auth.VERSION_4_2_2) {
-		supportedAuth = append(supportedAuth, auth.AUTH_V1)
-	} else if strings.Contains(agentVersion, auth.VERSION_4_2_3) {
+	if auth.VERSION_4_2_3.BeforeOrEquals(agentVersion) {
 		supportedAuth = append(supportedAuth, auth.AUTH_V2)
+	} else if auth.VERSION_4_2_2.Equals(agentVersion) {
+		supportedAuth = append(supportedAuth, auth.AUTH_V1)
 	} else {
 		if obshellauther == nil {
 			return fmt.Errorf("unsupported obshell version: %s", agentVersion) // Unexpected error
@@ -185,7 +185,11 @@ func (c *Client) tryCandidateAuth(request request.Request, response responselib.
 	if err != nil {
 		return false
 	}
-	if strings.Contains(version, auth.VERSION_4_2_2) || strings.Contains(version, auth.VERSION_4_2_3) {
+
+	// Check if the agent version is less than or equal to 4.2.4.
+	if auth.VERSION_4_2_4.BeforeOrEquals(version) {
+		// For this version, when an UnauthorizedError is returned, it may indicate issues other than just a unauthorized error.
+		// Therefore, we need to reconfirm the authentication version and attempt the request again instead of immediately using the candidate.
 		if err = c.reconfirmAuthVersion(); err != nil {
 			return false
 		}

@@ -18,7 +18,6 @@ package v1
 
 import (
 	"fmt"
-	"strings"
 	"time"
 
 	"github.com/pkg/errors"
@@ -88,7 +87,7 @@ func (r *ConfigObclusterRequest) encryptPassword() error {
 		if err != nil {
 			return fmt.Errorf("get agent version error: %v", err)
 		}
-		if strings.Contains(agentVserion, auth.VERSION_4_2_2) || strings.Contains(agentVserion, auth.VERSION_4_2_3) {
+		if auth.VERSION_4_2_4.After(agentVserion) {
 			pk, _ := util.GetPublicKey(r.GetServer())
 			r.body["rootPwd"], err = auth.RSAEncrypt([]byte(pwd.(string)), pk)
 			if err != nil {
