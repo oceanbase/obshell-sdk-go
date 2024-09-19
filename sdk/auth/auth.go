@@ -101,6 +101,7 @@ func (authVersion *AuthVersion) GetCompatibleList() []string {
 }
 
 func (authVersion *AuthVersion) IsSupported(version string) bool {
+	version = strings.Split(version, "-")[0]
 	for _, v := range authVersion.compatibleVersion {
 		if v == version {
 			return true
@@ -110,6 +111,7 @@ func (authVersion *AuthVersion) IsSupported(version string) bool {
 }
 
 func (authVersion *AuthVersion) SetVersion(version string) bool {
+	version = strings.Split(version, "-")[0]
 	if !authVersion.IsSupported(version) {
 		return false
 	}
@@ -125,7 +127,7 @@ func (authVersion *AuthVersion) GetVersion() string {
 func (authVersion *AuthVersion) AutoSelectVersion(version ...string) bool {
 	for _, v := range version {
 		if authVersion.IsSupported(v) {
-			authVersion.version = v
+			authVersion.version = strings.Split(v, "-")[0]
 			authVersion.isAutoSelect = true
 			return true
 		}
@@ -138,23 +140,23 @@ func (authVersion *AuthVersion) IsAutoSelectVersion() bool {
 }
 
 func (authVersion *AuthVersion) Berfore(version string) bool {
-	return cmpVersionString(authVersion.version, version) < 0
+	return cmpVersionString(authVersion.version, strings.Split(version, "-")[0]) < 0
 }
 
 func (authVersion *AuthVersion) After(version string) bool {
-	return cmpVersionString(authVersion.version, version) > 0
+	return cmpVersionString(authVersion.version, strings.Split(version, "-")[0]) > 0
 }
 
 func (authVersion *AuthVersion) Equals(version string) bool {
-	return cmpVersionString(authVersion.version, version) == 0
+	return cmpVersionString(authVersion.version, strings.Split(version, "-")[0]) == 0
 }
 
 func (authVersion *AuthVersion) BeforeOrEquals(version string) bool {
-	return cmpVersionString(authVersion.version, version) <= 0
+	return cmpVersionString(authVersion.version, strings.Split(version, "-")[0]) <= 0
 }
 
 func (authVersion *AuthVersion) AfterOrEquals(version string) bool {
-	return cmpVersionString(authVersion.version, version) >= 0
+	return cmpVersionString(authVersion.version, strings.Split(version, "-")[0]) >= 0
 }
 
 // cmpVersionString compare two version string, return 1 if ver1 > ver2, -1 if ver1 < ver2, 0 if ver1 == ver2
