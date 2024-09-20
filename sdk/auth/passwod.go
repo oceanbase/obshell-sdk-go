@@ -62,6 +62,7 @@ type PasswordAuthMethod struct {
 
 func (auth *PasswordAuthMethod) Reset() {
 	auth.pk = ""
+	auth.identityCheck = false
 }
 
 func (auth *PasswordAuthMethod) checkIdentity(req request.Request) error {
