@@ -40,7 +40,9 @@ type GetStatusResponse struct {
 	*model.AgentStatus
 }
 
-func (r *GetStatusResponse) Init() {}
+func (r *GetStatusResponse) Init() {
+	r.Data = r.AgentStatus
+}
 
 func (c *Client) createGetStatusResponse() *GetStatusResponse {
 	return &GetStatusResponse{
