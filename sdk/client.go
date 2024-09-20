@@ -154,15 +154,14 @@ func (c *Client) confirmAuthVersion() error {
 	}
 
 	var supportedAuth []string
-	if auth.VERSION_4_2_3.BeforeOrEquals(agentVersion) {
-		supportedAuth = append(supportedAuth, auth.AUTH_V2)
+	if obshellauther != nil {
+		supportedAuth = obshellauther.SupportedAuth
 	} else if auth.VERSION_4_2_2.Equals(agentVersion) {
 		supportedAuth = append(supportedAuth, auth.AUTH_V1)
+	} else if auth.VERSION_4_2_3.BeforeOrEquals(agentVersion) {
+		supportedAuth = append(supportedAuth, auth.AUTH_V2)
 	} else {
-		if obshellauther == nil {
-			return fmt.Errorf("unsupported obshell version: %s", agentVersion) // Unexpected error
-		}
-		supportedAuth = obshellauther.SupportedAuth
+		return fmt.Errorf("unsupported obshell version: %s", agentVersion) // Unexpected error
 	}
 
 	if !c.auth.AutoSelectVersion(supportedAuth...) {
