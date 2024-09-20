@@ -78,10 +78,11 @@ func (c *Client) RemoveWithRequest(req *RemoveRequest) (dag *model.DagDetailDTO,
 // the DagDetailDTO is the final status of the task.
 // the parameter is a RemoveRequest, which can be created by NewRemoveRequest.
 // You can check or operater the task through the DagDetailDTO.
-func (c *Client) RemoveSyncWithRequest(req *RemoveRequest) (*model.DagDetailDTO, error) {
-	dag, err := c.RemoveWithRequest(req)
-	if err != nil {
+func (c *Client) RemoveSyncWithRequest(req *RemoveRequest) (dag *model.DagDetailDTO, err error) {
+	if dag, err = c.RemoveWithRequest(req); err != nil {
 		return nil, errors.Wrap(err, "request failed")
+	} else if dag != nil && dag.GenericDTO != nil {
+		return c.WaitDagSucceed(dag.GenericID)
 	}
-	return c.WaitDagSucceed(dag.GenericID)
+	return
 }
