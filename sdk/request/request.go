@@ -19,8 +19,10 @@ package request
 import (
 	"fmt"
 	"net/url"
+	"strings"
 
 	"github.com/go-resty/resty/v2"
+	"github.com/pkg/errors"
 )
 
 type Request interface {
@@ -29,7 +31,7 @@ type Request interface {
 	SetBody(body interface{})
 	SetQueryParam(key, value string)
 	SetHeader(k, v string)
-	BuildUrl() string
+	BuildUrl() (string, error)
 	GetUri() (string, error)
 	GetServer() string
 	Authentication() bool
@@ -97,12 +99,16 @@ func (r *BaseRequest) GetPort() int {
 	return r.port
 }
 
-func (r *BaseRequest) BuildUrl() string {
-	return fmt.Sprintf("%s://%s%s", r.Protocol, r.GetServer(), r.uri)
+func (r *BaseRequest) BuildUrl() (string, error) {
+	uri, err := r.GetUri()
+	if err != nil {
+		return "", errors.Wrap(err, "get uri failed")
+	}
+	return fmt.Sprintf("%s://%s%s", r.Protocol, r.GetServer(), uri), nil
 }
 
 func (r *BaseRequest) GetUri() (string, error) {
-	uri, err := url.Parse(r.uri)
+	uri, err := url.Parse(strings.Replace(url.PathEscape(r.uri), "%2F", "/", -1))
 	if err != nil {
 		return "", err
 	}

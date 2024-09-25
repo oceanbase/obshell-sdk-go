@@ -37,14 +37,14 @@ const (
 
 // the response struct of ocsagent
 type OcsAgentResponse struct {
-	Successful bool        `json:"successful"`      // Whether request successful or not
-	Timestamp  time.Time   `json:"timestamp"`       // Request handling timestamp (server time)
-	Duration   int64       `json:"duration"`        // Request handling time cost (ms)
-	Status     int         `json:"status"`          // HTTP status code
-	TraceId    string      `json:"traceId"`         // Request trace ID, contained in server logs
-	Data       interface{} `json:"data,omitempty"`  // Data payload when response is successful
-	Error      *ApiError   `json:"error,omitempty"` // Error payload when response is failed
-	ret        bool        // Whether the response is expected to return
+	Successful bool        `json:"successful"`      // Whether request successful or not.
+	Timestamp  time.Time   `json:"timestamp"`       // Request handling timestamp (server time).
+	Duration   int64       `json:"duration"`        // Request handling time cost (ms).
+	Status     int         `json:"status"`          // HTTP status code.
+	TraceId    string      `json:"traceId"`         // Request trace ID, contained in server logs.
+	Data       interface{} `json:"data,omitempty"`  // Data payload when response is successful.
+	Error      *ApiError   `json:"error,omitempty"` // Error payload when response is failed.
+	ret        bool        // Whether the response is expected to return.
 }
 
 func (r *OcsAgentResponse) GetData() interface{} {

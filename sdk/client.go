@@ -271,7 +271,10 @@ func (c *Client) realExecute(req request.Request, response responselib.Response)
 		SetResult(response)
 
 	var resp *resty.Response
-	targetUrl := req.BuildUrl()
+	targetUrl, err := req.BuildUrl()
+	if err != nil {
+		return errors.Wrap(err, "build url failed")
+	}
 	switch req.GetMethod() {
 	case "GET":
 		resp, err = r.Get(targetUrl)
