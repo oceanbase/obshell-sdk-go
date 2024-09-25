@@ -18,6 +18,7 @@ package request
 
 import (
 	"fmt"
+	"net/url"
 
 	"github.com/go-resty/resty/v2"
 )
@@ -26,9 +27,10 @@ type Request interface {
 	GetMethod() string
 	GetBody() interface{}
 	SetBody(body interface{})
+	SetQueryParam(key, value string)
 	SetHeader(k, v string)
 	BuildUrl() string
-	GetUri() string
+	GetUri() (string, error)
 	GetServer() string
 	Authentication() bool
 	IsAsync() bool
@@ -45,17 +47,21 @@ type BaseRequest struct {
 	Version        string
 	header         map[string]string
 	body           interface{}
+	queryParam     map[string]string
 	files          map[string]string
 	isAsync        bool
 }
 
 func NewBaseRequest() *BaseRequest {
-	return &BaseRequest{}
+	return &BaseRequest{
+		queryParam: make(map[string]string),
+	}
 }
 
 func NewAsyncBaseRequest() *BaseRequest {
 	return &BaseRequest{
-		isAsync: true,
+		queryParam: make(map[string]string),
+		isAsync:    true,
 	}
 }
 
@@ -69,6 +75,10 @@ func (r *BaseRequest) GetBody() interface{} {
 
 func (r *BaseRequest) SetBody(body interface{}) {
 	r.body = body
+}
+
+func (r *BaseRequest) SetQueryParam(key, value string) {
+	r.queryParam[key] = value
 }
 
 func (r *BaseRequest) SetHeader(k, v string) {
@@ -91,8 +101,17 @@ func (r *BaseRequest) BuildUrl() string {
 	return fmt.Sprintf("%s://%s%s", r.Protocol, r.GetServer(), r.uri)
 }
 
-func (r *BaseRequest) GetUri() string {
-	return r.uri
+func (r *BaseRequest) GetUri() (string, error) {
+	uri, err := url.Parse(r.uri)
+	if err != nil {
+		return "", err
+	}
+	params := url.Values{}
+	for k, v := range r.queryParam {
+		params.Add(k, v)
+	}
+	uri.RawQuery = params.Encode()
+	return uri.String(), nil
 }
 
 func (r *BaseRequest) GetMethod() string {
@@ -136,6 +155,12 @@ func (r *BaseRequest) BuildHttpRequest(context *Context) *resty.Request {
 		req.SetBody(context.body)
 	} else {
 		req.SetBody(r.body)
+	}
+
+	if r.method == "GET" {
+		for k, v := range r.queryParam {
+			req.SetQueryParam(k, v)
+		}
 	}
 
 	return req

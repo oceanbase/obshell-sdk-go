@@ -17,6 +17,8 @@
 package v1
 
 import (
+	"fmt"
+
 	"github.com/oceanbase/obshell-sdk-go/model"
 	"github.com/oceanbase/obshell-sdk-go/sdk/request"
 	"github.com/oceanbase/obshell-sdk-go/sdk/response"
@@ -39,10 +41,9 @@ func (c *Client) NewGetClusterUnfinishedDagsRequest() *GetClusterUnfinishedDagsR
 
 // SetShowDetail set whether show detail.
 
-func (req *GetClusterUnfinishedDagsRequest) SetShowDetail(showDetail bool) {
-	req.SetBody(map[string]bool{
-		"showDetail": showDetail,
-	})
+func (r *GetClusterUnfinishedDagsRequest) SetShowDetail(showDetail bool) *GetClusterUnfinishedDagsRequest {
+	r.SetQueryParam("show_details", fmt.Sprintf("%t", showDetail))
+	return r
 }
 
 // GetClusterUnfinishedDags returns a []*DagDetailDTO and an error.

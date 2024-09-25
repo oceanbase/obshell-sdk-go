@@ -17,6 +17,7 @@
 package v1
 
 import (
+	"fmt"
 	"strings"
 	"time"
 
@@ -46,7 +47,7 @@ func (c *Client) NewGetDagRequest(dagId string) *GetDagRequest {
 
 // SetShowDetail set whether show detail.
 func (r *GetDagRequest) SetShowDetail(showDetail bool) *GetDagRequest {
-	r.SetBody(map[string]bool{"showDetail": showDetail})
+	r.SetQueryParam("show_details", fmt.Sprintf("%t", showDetail))
 	return r
 }
 

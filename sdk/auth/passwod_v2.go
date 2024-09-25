@@ -61,7 +61,12 @@ func (auth *PasswordAuthV2) Auth(req request.Request, context *request.Context) 
 		}
 	}
 
-	encryptedBody, header, err := auth.BuildBodyAndHeader(req.GetBody(), auth.pwd, req.GetUri())
+	uri, err := req.GetUri()
+	if err != nil {
+		return err
+	}
+
+	encryptedBody, header, err := auth.BuildBodyAndHeader(req.GetBody(), auth.pwd, uri)
 	if err != nil {
 		return err
 	}

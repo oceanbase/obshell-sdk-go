@@ -17,6 +17,8 @@
 package v1
 
 import (
+	"fmt"
+
 	"github.com/oceanbase/obshell-sdk-go/model"
 	"github.com/oceanbase/obshell-sdk-go/sdk/request"
 	"github.com/oceanbase/obshell-sdk-go/sdk/response"
@@ -39,7 +41,7 @@ func (c *Client) NewGetAllAgentLastMaintenanceDagRequest() *GetAllAgentLastMaint
 
 // SetShowDetail set whether show detail.
 func (r *GetAllAgentLastMaintenanceDagRequest) SetShowDetail(showDetail bool) *GetAllAgentLastMaintenanceDagRequest {
-	r.SetBody(map[string]bool{"showDetail": showDetail})
+	r.SetQueryParam("show_details", fmt.Sprintf("%t", showDetail))
 	return r
 }
 
