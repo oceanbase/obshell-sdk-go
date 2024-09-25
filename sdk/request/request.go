@@ -16,23 +16,23 @@
 
 package request
 
-import "fmt"
+import (
+	"fmt"
+
+	"github.com/go-resty/resty/v2"
+)
 
 type Request interface {
 	GetMethod() string
-	GetHeader() map[string]string
-	Body() interface{}
+	GetBody() interface{}
 	SetBody(body interface{})
-	SetOriginalBody(body interface{})
-	OriginalBody() interface{}
+	SetHeader(k, v string)
 	BuildUrl() string
 	GetUri() string
 	GetServer() string
-	SetFile(string, string)
-	GetFiles() map[string]string
-	SetHeaderByKey(string, string)
 	Authentication() bool
 	IsAsync() bool
+	BuildHttpRequest(context *Context) *resty.Request
 }
 
 type BaseRequest struct {
@@ -40,10 +40,10 @@ type BaseRequest struct {
 	port           int
 	uri            string
 	Protocol       string
-	Method         string
+	method         string
 	authentication bool
 	Version        string
-	Header         map[string]string
+	header         map[string]string
 	body           interface{}
 	files          map[string]string
 	isAsync        bool
@@ -63,7 +63,7 @@ func (r *BaseRequest) IsAsync() bool {
 	return r.isAsync
 }
 
-func (r *BaseRequest) Body() interface{} {
+func (r *BaseRequest) GetBody() interface{} {
 	return r.body
 }
 
@@ -72,15 +72,7 @@ func (r *BaseRequest) SetBody(body interface{}) {
 }
 
 func (r *BaseRequest) SetHeader(k, v string) {
-	r.Header[k] = v
-}
-
-func (r *BaseRequest) OriginalBody() interface{} {
-	return r.body
-}
-
-func (r *BaseRequest) SetOriginalBody(body interface{}) {
-	r.body = body
+	r.header[k] = v
 }
 
 func (r *BaseRequest) GetServer() string {
@@ -103,16 +95,8 @@ func (r *BaseRequest) GetUri() string {
 	return r.uri
 }
 
-func (r *BaseRequest) SetFile(name, dir string) {
-	r.files[name] = dir
-}
-
-func (r *BaseRequest) GetFiles() map[string]string {
-	return r.files
-}
-
 func (r *BaseRequest) GetMethod() string {
-	return r.Method
+	return r.method
 }
 
 func (r *BaseRequest) SetAuthentication() {
@@ -123,20 +107,36 @@ func (r *BaseRequest) Authentication() bool {
 	return r.authentication
 }
 
-func (r *BaseRequest) GetHeader() map[string]string {
-	return r.Header
-}
-
-func (r *BaseRequest) SetHeaderByKey(key, value string) {
-	r.Header[key] = value
-}
-
 func (r *BaseRequest) InitApiInfo(uri, host string, port int, method string) {
 	r.uri = uri
 	r.host = host
 	r.port = port
-	r.Header = map[string]string{}
+	r.header = map[string]string{
+		"Content-Type": "application/json",
+	}
 	r.files = map[string]string{}
 	r.Protocol = "http"
-	r.Method = method
+	r.method = method
+}
+
+func (r *BaseRequest) BuildHttpRequest(context *Context) *resty.Request {
+	// The default format of the request is JSON.
+	req := resty.New().R()
+
+	// Set headers which are not in context, set by service.
+	for k, v := range r.header {
+		req.SetHeader(k, v)
+	}
+
+	for k, v := range context.headers {
+		req.SetHeader(k, v)
+	}
+
+	if context.body != nil {
+		req.SetBody(context.body)
+	} else {
+		req.SetBody(r.body)
+	}
+
+	return req
 }

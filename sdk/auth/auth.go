@@ -56,7 +56,7 @@ var (
 )
 
 type AuthMethod interface {
-	Auth(request request.Request) error
+	Auth(request request.Request, context *request.Context) error
 	Reset()
 }
 
@@ -79,7 +79,7 @@ type Auther interface {
 	Type() AuthType
 	Reset()       // Reset will set method to nil.
 	ResetMethod() // ResetMethod will call method.Reset()
-	Auth(request request.Request) error
+	Auth(request request.Request, context *request.Context) error
 }
 
 // AuthVersion implements Versioner

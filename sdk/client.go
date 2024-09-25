@@ -252,43 +252,39 @@ func (c *Client) Execute(request request.Request, response responselib.Response)
 	return
 }
 
-func (c *Client) realExecute(request request.Request, response responselib.Response) (err error) {
-	if request == nil || reflect.ValueOf(request).IsNil() {
+func (c *Client) realExecute(req request.Request, response responselib.Response) (err error) {
+	if req == nil || reflect.ValueOf(req).IsNil() {
 		return errors.New("request is nil")
 	}
-	targetUrl := request.BuildUrl()
 
-	req := resty.New().R()
-	if request.Authentication() {
-		if err := c.auth.Auth(request); err != nil {
+	requestContext := request.NewContext()
+	if req.Authentication() {
+		if err = c.auth.Auth(req, requestContext); err != nil {
 			return err
 		}
 	}
-	response.Init()
-	req.SetResult(response)
-	req.
-		SetHeader("Content-Type", "application/json").
-		SetBody(request.Body()).
-		SetError(response)
 
-	for k, v := range request.GetHeader() {
-		req.SetHeader(k, v)
-	}
+	response.Init()
+
+	r := req.BuildHttpRequest(requestContext).
+		SetError(response).
+		SetResult(response)
 
 	var resp *resty.Response
-	switch request.GetMethod() {
+	targetUrl := req.BuildUrl()
+	switch req.GetMethod() {
 	case "GET":
-		resp, err = req.Get(targetUrl)
+		resp, err = r.Get(targetUrl)
 	case "PUT":
-		resp, err = req.Put(targetUrl)
+		resp, err = r.Put(targetUrl)
 	case "POST":
-		resp, err = req.Post(targetUrl)
+		resp, err = r.Post(targetUrl)
 	case "PATCH":
-		resp, err = req.Patch(targetUrl)
+		resp, err = r.Patch(targetUrl)
 	case "DELETE":
-		resp, err = req.Delete(targetUrl)
+		resp, err = r.Delete(targetUrl)
 	default:
-		return fmt.Errorf("%s method not support", request.GetMethod())
+		return fmt.Errorf("%s method not support", req.GetMethod())
 	}
 	if err != nil {
 		return errors.Wrap(err, "request failed")

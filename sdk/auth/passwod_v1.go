@@ -34,12 +34,12 @@ func newPasswordAuthV1(pwd string) *PasswordAuthV1 {
 	}
 }
 
-func (auth *PasswordAuthV1) Auth(req request.Request) error {
+func (auth *PasswordAuthV1) Auth(req request.Request, context *request.Context) error {
 	if !req.Authentication() {
 		return nil
 	}
-	var err error
 
+	var err error
 	if err = auth.checkIdentity(req); err != nil {
 		return err
 	}
@@ -55,7 +55,6 @@ func (auth *PasswordAuthV1) Auth(req request.Request) error {
 		"password": auth.pwd,
 		"ts":       time.Now().Unix() + 20,
 	}
-
 	authJSON, err := json.Marshal(authMap)
 	if err != nil {
 		return err
@@ -64,6 +63,7 @@ func (auth *PasswordAuthV1) Auth(req request.Request) error {
 	if err != nil {
 		return err
 	}
-	req.SetHeaderByKey("X-OCS-Auth", encryptedPwd)
+	context.SetHeader("X-OCS-Auth", encryptedPwd)
+
 	return nil
 }

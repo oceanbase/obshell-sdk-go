@@ -36,10 +36,10 @@ func NewPasswordAuth(pwd string) *PasswordAuth {
 	}
 }
 
-func (auth *PasswordAuth) Auth(request request.Request) error {
+func (auth *PasswordAuth) Auth(request request.Request, context *request.Context) error {
 	method := auth.method
 	if method != nil {
-		return method.Auth(request)
+		return method.Auth(request, context)
 	}
 
 	switch auth.GetVersion() {
@@ -51,7 +51,7 @@ func (auth *PasswordAuth) Auth(request request.Request) error {
 		return ErrNotSupportedAuthVersion
 	}
 
-	return auth.method.Auth(request)
+	return auth.method.Auth(request, context)
 }
 
 type PasswordAuthMethod struct {

@@ -18,7 +18,6 @@ package v1
 
 import (
 	"fmt"
-	"time"
 
 	"github.com/pkg/errors"
 
@@ -103,30 +102,15 @@ func (r *ConfigObclusterRequest) encryptPassword() error {
 // You can use WaitDagSucceed to wait for the task to complete.
 // You can check or operater the task through the DagDetailDTO.
 func (c *Client) ConfigObclusterWithRequest(req *ConfigObclusterRequest) (dag *model.DagDetailDTO, err error) {
-	c.setPasswordCandidateAuth(req.password)
 	response := c.createConfigObclusterResponse()
 	if err = req.encryptPassword(); err != nil {
 		return
 	}
 	err = c.Execute(req, response)
+	if err == nil {
+		c.setPasswordCandidateAuth(req.password)
+	}
 	dag = response.DagDetailDTO
-	go func() {
-		defer func() {
-			c.DiscardCandidateAuth()
-		}()
-
-		for {
-			dag, err := c.GetDag(dag.GenericID)
-			if err != nil {
-				return
-			}
-			if dag.IsFinished() {
-				c.AdoptCandidateAuth()
-				return
-			}
-			time.Sleep(2 * time.Second)
-		}
-	}()
 	return
 }
 

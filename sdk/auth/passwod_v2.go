@@ -44,12 +44,12 @@ func newPasswordAuthV2(pwd string) *PasswordAuthV2 {
 	}
 }
 
-func (auth *PasswordAuthV2) Auth(req request.Request) error {
+func (auth *PasswordAuthV2) Auth(req request.Request, context *request.Context) error {
 	if !req.Authentication() {
 		return nil
 	}
-	var err error
 
+	var err error
 	if err = auth.checkIdentity(req); err != nil {
 		return err
 	}
@@ -61,17 +61,13 @@ func (auth *PasswordAuthV2) Auth(req request.Request) error {
 		}
 	}
 
-	originalBody := req.OriginalBody()
-	if originalBody == nil {
-		req.SetOriginalBody(req.Body())
-		originalBody = req.OriginalBody()
-	}
-	encryptedBody, header, err := auth.BuildBodyAndHeader(originalBody, auth.pwd, req.GetUri())
+	encryptedBody, header, err := auth.BuildBodyAndHeader(req.GetBody(), auth.pwd, req.GetUri())
 	if err != nil {
 		return err
 	}
-	req.SetHeaderByKey("X-OCS-Header", header["X-OCS-Header"])
-	req.SetBody(encryptedBody)
+	context.SetHeader("X-OCS-Header", header["X-OCS-Header"])
+	context.SetBody(encryptedBody)
+
 	return nil
 }
 
