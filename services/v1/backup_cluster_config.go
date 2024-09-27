@@ -283,8 +283,6 @@ type ClusterBackupStatusResponse struct {
 	*response.OcsAgentResponse
 }
 
-func (c *ClusterBackupStatusResponse) Init() {}
-
 func (c *Client) createClusterBackupStatusResponse() *ClusterBackupStatusResponse {
 	return &ClusterBackupStatusResponse{
 		OcsAgentResponse: response.NewOcsAgentResponseWithoutReturn(),
@@ -333,8 +331,6 @@ type ClusterLogStatusResponse struct {
 	*response.OcsAgentResponse
 }
 
-func (c *ClusterLogStatusResponse) Init() {}
-
 func (c *Client) createClusterLogStatusResponse() *ClusterLogStatusResponse {
 	return &ClusterLogStatusResponse{
 		OcsAgentResponse: response.NewOcsAgentResponseWithoutReturn(),
@@ -360,15 +356,13 @@ type ClusterBackupOverviewResponse struct {
 	Statuses []model.CdbObBackupTask `json:"statuses"`
 }
 
-func (r *ClusterBackupOverviewResponse) Init() {
-	r.Data = &r.Statuses
-}
-
 func (c *Client) createClusterBackupOverviewResponse() *ClusterBackupOverviewResponse {
-	return &ClusterBackupOverviewResponse{
+	resp := &ClusterBackupOverviewResponse{
 		OcsAgentResponse: response.NewOcsAgentResponse(),
 		Statuses:         make([]model.CdbObBackupTask, 0),
 	}
+	resp.Data = &resp.Statuses
+	return resp
 }
 
 // GetClusterBackupOverview fetches the overview of cluster backups.

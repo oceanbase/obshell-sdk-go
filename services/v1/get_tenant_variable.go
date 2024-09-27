@@ -43,15 +43,13 @@ type getTenantVariableResponse struct {
 	*model.VariableInfo
 }
 
-func (r *getTenantVariableResponse) Init() {
-	r.Data = r.VariableInfo
-}
-
 func (c *Client) createGetTenantVariableResponse() *getTenantVariableResponse {
-	return &getTenantVariableResponse{
+	resp := &getTenantVariableResponse{
 		OcsAgentResponse: response.NewOcsAgentResponse(),
 		VariableInfo:     &model.VariableInfo{},
 	}
+	resp.Data = resp.VariableInfo
+	return resp
 }
 
 // GetTenantVariable returns a *VariableInfo and an error.

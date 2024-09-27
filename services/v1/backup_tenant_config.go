@@ -281,8 +281,6 @@ type TenantBackupStatusResponse struct {
 	*response.OcsAgentResponse
 }
 
-func (r *TenantBackupStatusResponse) Init() {}
-
 func (c *Client) createTenantBackupStatusResponse() *TenantBackupStatusResponse {
 	return &TenantBackupStatusResponse{
 		OcsAgentResponse: response.NewOcsAgentResponseWithoutReturn(),
@@ -337,8 +335,6 @@ type TenantLogStatusResponse struct {
 	*response.OcsAgentResponse
 }
 
-func (r *TenantLogStatusResponse) Init() {}
-
 func (c *Client) createTenantLogStatusResponse() *TenantLogStatusResponse {
 	return &TenantLogStatusResponse{
 		OcsAgentResponse: response.NewOcsAgentResponseWithoutReturn(),
@@ -365,15 +361,13 @@ type TenantBackupOverviewResponse struct {
 	model.CdbObBackupTask `json:"status"`
 }
 
-func (r *TenantBackupOverviewResponse) Init() {
-	r.Data = &r.CdbObBackupTask
-}
-
 func (c *Client) createTenantBackupOverviewResponse() *TenantBackupOverviewResponse {
-	return &TenantBackupOverviewResponse{
+	resp := &TenantBackupOverviewResponse{
 		OcsAgentResponse: response.NewOcsAgentResponse(),
 		CdbObBackupTask:  model.CdbObBackupTask{},
 	}
+	resp.Data = &resp.CdbObBackupTask
+	return resp
 }
 
 // GetTenantBackupOverview fetches an overview of tenant backups.

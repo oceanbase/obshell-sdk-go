@@ -31,8 +31,6 @@ type DropResourceUnitConfigResponse struct {
 	*response.OcsAgentResponse
 }
 
-func (r *DropResourceUnitConfigResponse) Init() {}
-
 func (c *Client) createDropResourceUnitConfigResponse() *DropResourceUnitConfigResponse {
 	return &DropResourceUnitConfigResponse{
 		OcsAgentResponse: response.NewOcsAgentResponseWithoutReturn(),

@@ -45,14 +45,13 @@ type getAllRecyclebinTenantsResponse struct {
 	*IteratorRecyclebinTenants
 }
 
-func (r *getAllRecyclebinTenantsResponse) Init() {
-	r.Data = r.IteratorRecyclebinTenants
-}
 func (c *Client) createGetAllRecyclebinTenantsResponse() *getAllRecyclebinTenantsResponse {
-	return &getAllRecyclebinTenantsResponse{
+	resp := &getAllRecyclebinTenantsResponse{
 		OcsAgentResponse:          response.NewOcsAgentResponse(),
 		IteratorRecyclebinTenants: &IteratorRecyclebinTenants{},
 	}
+	resp.Data = resp.IteratorRecyclebinTenants
+	return resp
 }
 
 // GetAllRecyclebinTenants returns a []RecyclebinTenantInfo and an error.

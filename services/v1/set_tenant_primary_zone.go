@@ -30,14 +30,12 @@ type SetTenantPrimaryZoneRequest struct {
 }
 
 type setTenantPrimaryZoneResponse struct {
-	*response.OcsAgentResponse
+	*response.TaskResponse
 }
-
-func (r *setTenantPrimaryZoneResponse) Init() {}
 
 func (c *Client) createSetTenantPrimaryZoneResponse() *setTenantPrimaryZoneResponse {
 	return &setTenantPrimaryZoneResponse{
-		OcsAgentResponse: response.NewOcsAgentResponseWithoutReturn(),
+		TaskResponse: response.NewTaskResponse(),
 	}
 }
 
@@ -75,7 +73,7 @@ func (c *Client) SetTenantPrimaryZoneSyncWithRequest(request *SetTenantPrimaryZo
 
 // SetTenantPrimaryZoneWithRequest sets the primary zone of a tenant with a SetTenantPrimaryZoneRequest.
 func (c *Client) SetTenantPrimaryZoneWithRequest(request *SetTenantPrimaryZoneRequest) (*model.DagDetailDTO, error) {
-	response := c.createScaleOutResponse()
+	response := c.createSetTenantPrimaryZoneResponse()
 	err := c.Execute(request, response)
 	dag := response.DagDetailDTO
 	return dag, err

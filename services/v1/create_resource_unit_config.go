@@ -46,8 +46,6 @@ func (c *Client) createCreateResourceUnitConfigResponse() *createResourceUnitCon
 	}
 }
 
-func (r *createResourceUnitConfigResponse) Init() {}
-
 // NewCreateResourceUnitConfigRequest return a CreateResourceUnitConfigRequest, which can be used as the argument for the CreateResourceUnitConfigWithRequest.
 // unitConfigName: the name of the resource unit config.
 // memorySize: the memory size of the resource unit config.

@@ -41,15 +41,13 @@ type getObInfoResponse struct {
 	*model.ObInfoResp
 }
 
-func (r *getObInfoResponse) Init() {
-	r.Data = r.ObInfoResp
-}
-
 func (c *Client) createGetObInfoResponse() *getObInfoResponse {
-	return &getObInfoResponse{
+	resp := &getObInfoResponse{
 		OcsAgentResponse: response.NewOcsAgentResponse(),
 		ObInfoResp:       &model.ObInfoResp{},
 	}
+	resp.Data = resp.ObInfoResp
+	return resp
 }
 
 // GetObInfo returns a ObInfoResp and an error.

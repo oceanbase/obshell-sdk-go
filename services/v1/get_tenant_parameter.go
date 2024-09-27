@@ -43,15 +43,13 @@ type getTenantParameterResponse struct {
 	*model.ParameterInfo
 }
 
-func (r *getTenantParameterResponse) Init() {
-	r.Data = r.ParameterInfo
-}
-
 func (c *Client) createGetTenantParameterResponse() *getTenantParameterResponse {
-	return &getTenantParameterResponse{
+	resp := &getTenantParameterResponse{
 		OcsAgentResponse: response.NewOcsAgentResponse(),
 		ParameterInfo:    &model.ParameterInfo{},
 	}
+	resp.Data = resp.ParameterInfo
+	return resp
 }
 
 // GetTenantParameter returns a *ParameterInfo and an error.

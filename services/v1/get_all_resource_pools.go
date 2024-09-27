@@ -45,15 +45,13 @@ type getAllResourcePoolsResponse struct {
 	*IterablePools
 }
 
-func (r *getAllResourcePoolsResponse) Init() {
-	r.Data = r.IterablePools
-}
-
 func (c *Client) createGetAllResourcePoolsResponse() *getAllResourcePoolsResponse {
-	return &getAllResourcePoolsResponse{
+	resp := &getAllResourcePoolsResponse{
 		OcsAgentResponse: response.NewOcsAgentResponse(),
 		IterablePools:    &IterablePools{},
 	}
+	resp.Data = resp.IterablePools
+	return resp
 }
 
 // GetAllResourcePools returns a []ResourcePoolInfo and an error.

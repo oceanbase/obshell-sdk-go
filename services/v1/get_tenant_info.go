@@ -43,15 +43,13 @@ type getTenantInfoResponse struct {
 	*model.TenantInfo
 }
 
-func (r *getTenantInfoResponse) Init() {
-	r.Data = r.TenantInfo
-}
-
 func (c *Client) createGetTenantInfoResponse() *getTenantInfoResponse {
-	return &getTenantInfoResponse{
+	resp := &getTenantInfoResponse{
 		OcsAgentResponse: response.NewOcsAgentResponse(),
 		TenantInfo:       &model.TenantInfo{},
 	}
+	resp.Data = resp.TenantInfo
+	return resp
 }
 
 // GetTenantInfo returns a *TenantInfoInfo and an error.

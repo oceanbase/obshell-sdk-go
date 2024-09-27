@@ -41,15 +41,13 @@ type GetSubTaskResponse struct {
 	*model.TaskDetailDTO
 }
 
-func (r *GetSubTaskResponse) Init() {
-	r.Data = r.TaskDetailDTO
-}
-
 func (c *Client) createGetSubTaskResponse() *GetSubTaskResponse {
-	return &GetSubTaskResponse{
+	resp := &GetSubTaskResponse{
 		OcsAgentResponse: response.NewOcsAgentResponse(),
 		TaskDetailDTO:    &model.TaskDetailDTO{},
 	}
+	resp.Data = resp.TaskDetailDTO
+	return resp
 }
 
 // GetSubTask returns a TaskDetailDTO and an error.

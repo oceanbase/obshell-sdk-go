@@ -45,15 +45,13 @@ type IteratorTenantOverview struct {
 	Tenants []model.TenantOverview `json:"contents"`
 }
 
-func (r *getAllTenantOverviewResponse) Init() {
-	r.Data = r.IteratorTenantOverview
-}
-
 func (c *Client) createGetAllTenantOverviewResponse() *getAllTenantOverviewResponse {
-	return &getAllTenantOverviewResponse{
+	resp := &getAllTenantOverviewResponse{
 		OcsAgentResponse:       response.NewOcsAgentResponse(),
 		IteratorTenantOverview: &IteratorTenantOverview{},
 	}
+	resp.Data = resp.IteratorTenantOverview
+	return resp
 }
 
 // GetAllTenantOverview returns a []TenantOverview and an error.

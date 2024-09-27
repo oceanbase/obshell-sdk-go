@@ -31,9 +31,6 @@ type DropResourcePoolResponse struct {
 	*response.OcsAgentResponse
 }
 
-func (r *DropResourcePoolResponse) Init() {
-}
-
 func (c *Client) createDropResourcePoolResponse() *DropResourcePoolResponse {
 	return &DropResourcePoolResponse{
 		OcsAgentResponse: response.NewOcsAgentResponseWithoutReturn(),

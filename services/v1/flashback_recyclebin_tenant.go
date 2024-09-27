@@ -31,8 +31,6 @@ type FlashbackRecyclebinTenantResponse struct {
 	*response.OcsAgentResponse
 }
 
-func (r *FlashbackRecyclebinTenantResponse) Init() {}
-
 func (c *Client) createFlashbackRecyclebinTenantResponse() *FlashbackRecyclebinTenantResponse {
 	return &FlashbackRecyclebinTenantResponse{
 		OcsAgentResponse: response.NewOcsAgentResponseWithoutReturn(),

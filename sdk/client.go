@@ -267,8 +267,6 @@ func (c *Client) realExecute(req request.Request, response responselib.Response)
 		}
 	}
 
-	response.Init()
-
 	r := req.BuildHttpRequest(requestContext).
 		SetError(response).
 		SetResult(response)

@@ -54,15 +54,13 @@ type getTenantParametersResponse struct {
 	*IterableParameters
 }
 
-func (r *getTenantParametersResponse) Init() {
-	r.Data = r.IterableParameters
-}
-
 func (c *Client) createGetTenantParametersResponse() *getTenantParametersResponse {
-	return &getTenantParametersResponse{
+	resp := &getTenantParametersResponse{
 		OcsAgentResponse:   response.NewOcsAgentResponse(),
 		IterableParameters: &IterableParameters{},
 	}
+	resp.Data = resp.IterableParameters
+	return resp
 }
 
 // GetTenantParameters returns a []ParameterInfo and an error.

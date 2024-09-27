@@ -81,8 +81,6 @@ type GetUploadPkgResponse struct {
 	*UpgradePkgInfo
 }
 
-func (r *GetUploadPkgResponse) Init() {}
-
 type UpgradePkgInfo struct {
 	PkgId               int
 	Name                string
@@ -100,10 +98,12 @@ type UpgradePkgInfo struct {
 }
 
 func (c *Client) createUploadPkgResponse() *GetUploadPkgResponse {
-	return &GetUploadPkgResponse{
+	resp := &GetUploadPkgResponse{
 		OcsAgentResponse: response.NewOcsAgentResponse(),
 		UpgradePkgInfo:   &UpgradePkgInfo{},
 	}
+	resp.Data = resp.UpgradePkgInfo
+	return resp
 }
 
 // UploadPkg returns a error, when upload package successfully, the error will be nil.

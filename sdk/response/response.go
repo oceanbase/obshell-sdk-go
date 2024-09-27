@@ -26,7 +26,6 @@ type Response interface {
 	GetData() interface{}
 	GetError() error
 	isExpectReturn() bool
-	Init()
 }
 
 const (

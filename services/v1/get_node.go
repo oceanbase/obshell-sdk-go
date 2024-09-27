@@ -50,15 +50,13 @@ type GetNodeResponse struct {
 	*model.NodeDetailDTO
 }
 
-func (r *GetNodeResponse) Init() {
-	r.Data = r.NodeDetailDTO
-}
-
 func (c *Client) createGetNodeResponse() *GetNodeResponse {
-	return &GetNodeResponse{
+	resp := &GetNodeResponse{
 		OcsAgentResponse: response.NewOcsAgentResponse(),
 		NodeDetailDTO:    &model.NodeDetailDTO{},
 	}
+	resp.Data = resp.NodeDetailDTO
+	return resp
 }
 
 // GetNode returns a NodeDetailDTO and an error.

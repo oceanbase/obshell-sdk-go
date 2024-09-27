@@ -31,8 +31,6 @@ type setTenantParametersResponse struct {
 	*response.OcsAgentResponse
 }
 
-func (r *setTenantParametersResponse) Init() {}
-
 func (c *Client) createSetTenantParametersResponse() *setTenantParametersResponse {
 	return &setTenantParametersResponse{
 		OcsAgentResponse: response.NewOcsAgentResponseWithoutReturn(),

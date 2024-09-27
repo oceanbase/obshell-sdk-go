@@ -45,15 +45,13 @@ type getAllUnitConfigsResponse struct {
 	*IterableData
 }
 
-func (r *getAllUnitConfigsResponse) Init() {
-	r.Data = r.IterableData
-}
-
 func (c *Client) createGetAllUnitConfigsResponse() *getAllUnitConfigsResponse {
-	return &getAllUnitConfigsResponse{
+	resp := &getAllUnitConfigsResponse{
 		OcsAgentResponse: response.NewOcsAgentResponse(),
 		IterableData:     &IterableData{},
 	}
+	resp.Data = resp.IterableData
+	return resp
 }
 
 // GetAllUnitConfigs returns a []ResourceUnitConfig and an error.

@@ -40,15 +40,13 @@ type getInfoResponse struct {
 	*model.AgentRunStatus
 }
 
-func (r *getInfoResponse) Init() {
-	r.Data = r.AgentRunStatus
-}
-
 func (c *Client) createGetInfoResponse() *getInfoResponse {
-	return &getInfoResponse{
+	resp := &getInfoResponse{
 		OcsAgentResponse: response.NewOcsAgentResponse(),
 		AgentRunStatus:   &model.AgentRunStatus{},
 	}
+	resp.Data = resp.AgentRunStatus
+	return resp
 }
 
 // GetInfo returns a AgentRunStatus and an error.

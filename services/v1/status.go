@@ -40,15 +40,13 @@ type GetStatusResponse struct {
 	*model.AgentStatus
 }
 
-func (r *GetStatusResponse) Init() {
-	r.Data = r.AgentStatus
-}
-
 func (c *Client) createGetStatusResponse() *GetStatusResponse {
-	return &GetStatusResponse{
+	resp := &GetStatusResponse{
 		OcsAgentResponse: response.NewOcsAgentResponse(),
 		AgentStatus:      &model.AgentStatus{},
 	}
+	resp.Data = resp.AgentStatus
+	return resp
 }
 
 // GetStatus returns a AgentStatus and an error.

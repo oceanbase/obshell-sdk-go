@@ -46,15 +46,13 @@ type GetGitInfoResponse struct {
 	*GitInfo
 }
 
-func (r *GetGitInfoResponse) Init() {
-	r.Data = r.GitInfo
-}
-
 func (c *Client) createGetGitInfoResponse() *GetGitInfoResponse {
-	return &GetGitInfoResponse{
+	resp := &GetGitInfoResponse{
 		OcsAgentResponse: response.NewOcsAgentResponse(),
 		GitInfo:          &GitInfo{},
 	}
+	resp.Data = resp.GitInfo
+	return resp
 }
 
 // GetGitInfo returns a ObGitInfoResp and an error.

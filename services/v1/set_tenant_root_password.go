@@ -31,8 +31,6 @@ type setTenantRootPasswordResponse struct {
 	*response.OcsAgentResponse
 }
 
-func (r *setTenantRootPasswordResponse) Init() {}
-
 func (c *Client) createSetTenantRootPasswordResponse() *setTenantRootPasswordResponse {
 	return &setTenantRootPasswordResponse{
 		OcsAgentResponse: response.NewOcsAgentResponseWithoutReturn(),

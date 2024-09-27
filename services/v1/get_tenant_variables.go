@@ -49,15 +49,13 @@ type getTenantVariablesResponse struct {
 	*IterableVariables
 }
 
-func (r *getTenantVariablesResponse) Init() {
-	r.Data = r.IterableVariables
-}
-
 func (c *Client) createGetTenantVariablesResponse() *getTenantVariablesResponse {
-	return &getTenantVariablesResponse{
+	resp := &getTenantVariablesResponse{
 		OcsAgentResponse:  response.NewOcsAgentResponse(),
 		IterableVariables: &IterableVariables{},
 	}
+	resp.Data = resp.IterableVariables
+	return resp
 }
 
 // GetTenantVariables returns a []VariableInfo and an error.

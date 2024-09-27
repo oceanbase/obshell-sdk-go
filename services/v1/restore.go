@@ -192,15 +192,13 @@ type TenantRestoreOverviewResponse struct {
 	model.RestoreOverview `json:"status"`
 }
 
-func (r *TenantRestoreOverviewResponse) Init() {
-	r.Data = &r.RestoreOverview
-}
-
 func (c *Client) createTenantRestoreOverviewResponse() *TenantRestoreOverviewResponse {
-	return &TenantRestoreOverviewResponse{
+	resp := &TenantRestoreOverviewResponse{
 		OcsAgentResponse: response.NewOcsAgentResponse(),
 		RestoreOverview:  model.RestoreOverview{},
 	}
+	resp.Data = &resp.RestoreOverview
+	return resp
 }
 
 // GetTenantRestoreOverview retrieves an overview of the tenant restore process.

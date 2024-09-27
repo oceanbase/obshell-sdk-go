@@ -31,8 +31,6 @@ type setTenantWhitelistResponse struct {
 	*response.OcsAgentResponse
 }
 
-func (r *setTenantWhitelistResponse) Init() {}
-
 func (c *Client) createSetTenantWhitelistResponse() *setTenantWhitelistResponse {
 	return &setTenantWhitelistResponse{
 		OcsAgentResponse: response.NewOcsAgentResponseWithoutReturn(),

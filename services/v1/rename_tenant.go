@@ -31,8 +31,6 @@ type renameTenantResponse struct {
 	*response.OcsAgentResponse
 }
 
-func (r *renameTenantResponse) Init() {}
-
 func (c *Client) createRenameTenantResponse() *renameTenantResponse {
 	return &renameTenantResponse{
 		OcsAgentResponse: response.NewOcsAgentResponseWithoutReturn(),
