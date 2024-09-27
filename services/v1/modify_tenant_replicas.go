@@ -79,7 +79,6 @@ func (c *Client) NewModifyTenantReplicasRequest(tenantName string, param []ZoneP
 			t.UnitNum = &param[i].UnitNum
 		}
 		body = append(body, t)
-		fmt.Printf("zone: %v\n", t)
 	}
 	req.SetBody(map[string]interface{}{
 		"zone_list": body,
