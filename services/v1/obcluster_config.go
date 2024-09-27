@@ -82,11 +82,11 @@ func (c *Client) ConfigObcluster(clusterName string, clusterId int) (*model.DagD
 func (r *ConfigObclusterRequest) encryptPassword() error {
 	pwd, exist := r.body["rootPwd"]
 	if exist {
-		agentVserion, _, err := util.GetVersion(r.GetServer())
+		agentInfo, err := util.GetInfo(r.GetServer())
 		if err != nil {
 			return fmt.Errorf("get agent version error: %v", err)
 		}
-		if auth.VERSION_4_2_4.After(agentVserion) {
+		if auth.VERSION_4_2_4.After(agentInfo.Version) {
 			pk, _ := util.GetPublicKey(r.GetServer())
 			r.body["rootPwd"], err = auth.RSAEncrypt([]byte(pwd.(string)), pk)
 			if err != nil {

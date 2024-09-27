@@ -26,32 +26,29 @@ import (
 	"github.com/oceanbase/obshell-sdk-go/model"
 )
 
-// getPublicKey function retrieves the public key from the API
-func GetVersion(server string) (string, *model.ObshellAuthInfo, error) {
+func GetInfo(server string) (*model.AgentRunStatus, error) {
 	resp, err := http.Get(fmt.Sprintf("http://%s/api/v1/info", server))
 	if err != nil {
 		log.Warn("Failed to get version: Network error: %v", err)
-		return "", nil, err
+		return nil, err
 	}
 	defer resp.Body.Close()
 
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		log.Warn("Failed to get version: Read error: %v", err)
-		return "", nil, err
+		return nil, err
 	}
 
 	var response struct {
-		Data struct {
-			Version  string                 `json:"version"`
-			AuthInfo *model.ObshellAuthInfo `json:"auth_info"`
-		} `json:"data"`
+		Data model.AgentRunStatus `json:"data"`
 	}
 	if err = json.Unmarshal(body, &response); err != nil {
 		log.Warn("Failed to get version: Unmarshal error: %v", err)
-		return "", nil, err
+		return nil, err
 	}
-	return response.Data.Version, response.Data.AuthInfo, nil
+
+	return &response.Data, nil
 }
 
 type AgentIdentity string

@@ -38,6 +38,7 @@ type AgentRunStatus struct {
 	StartAt  int64  `json:"startAt"`
 	HomePath string `json:"homePath"`
 	AgentInstance
+	SupportedAuth []string `json:"supportedAuth"`
 }
 
 type AgentInstance struct {

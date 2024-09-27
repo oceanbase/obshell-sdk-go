@@ -129,7 +129,7 @@ func (c *Client) GetPort() int {
 }
 
 func (c *Client) confirmAuthVersion() error {
-	agentVersion, obshellauther, err := util.GetVersion(c.GetServer())
+	agentInfo, err := util.GetInfo(c.GetServer())
 	if err != nil {
 		return errors.Wrap(err, "get version failed")
 	}
@@ -138,34 +138,37 @@ func (c *Client) confirmAuthVersion() error {
 		if !c.auth.IsSupported(c.auth.GetVersion()) {
 			return auth.ErrNotSupportedAuthVersion
 		}
-		if obshellauther == nil {
+		if agentInfo.SupportedAuth == nil {
 			// Check agent version and auth version compatibility, if not compatible, return error.
 			// 4.2.2 only support v1, 4.2.3 only support v2
-			if !(c.auth.GetVersion() == auth.AUTH_V1 && auth.VERSION_4_2_2.Equals(agentVersion) ||
-				c.auth.GetVersion() == auth.AUTH_V2 && auth.VERSION_4_2_3.BeforeOrEquals(agentVersion)) {
+			if !(c.auth.GetVersion() == auth.AUTH_V1 && auth.VERSION_4_2_2.Equals(agentInfo.Version) ||
+				c.auth.GetVersion() == auth.AUTH_V2 && auth.VERSION_4_2_3.BeforeOrEquals(agentInfo.Version)) {
 				return errors.New("unsupported auth version of obshell")
 			}
 		} else {
-			if !obshellauther.IsSupported(c.auth.GetVersion()) {
-				return errors.New("unsupported auth version of obshell")
+			for _, v := range agentInfo.SupportedAuth {
+				if v == c.auth.GetVersion() {
+					return nil
+				}
 			}
+			return errors.New("unsupported auth version of obshell")
 		}
 		return nil
 	}
 
 	var supportedAuth []string
-	if obshellauther != nil {
-		supportedAuth = obshellauther.SupportedAuth
-	} else if auth.VERSION_4_2_2.Equals(agentVersion) {
+	if agentInfo.SupportedAuth != nil {
+		supportedAuth = agentInfo.SupportedAuth
+	} else if auth.VERSION_4_2_2.Equals(agentInfo.Version) {
 		supportedAuth = append(supportedAuth, auth.AUTH_V1)
-	} else if auth.VERSION_4_2_3.BeforeOrEquals(agentVersion) {
+	} else if auth.VERSION_4_2_3.BeforeOrEquals(agentInfo.Version) {
 		supportedAuth = append(supportedAuth, auth.AUTH_V2)
 	} else {
-		return fmt.Errorf("unsupported obshell version: %s", agentVersion) // Unexpected error
+		return fmt.Errorf("unsupported obshell version: %s", agentInfo.Version) // Unexpected error
 	}
 
 	if !c.auth.AutoSelectVersion(supportedAuth...) {
-		return fmt.Errorf("there is no supprt auth version for target obshell(version: %s)", agentVersion)
+		return fmt.Errorf("there is no supprt auth version for target obshell(version: %s)", agentInfo.Version)
 	}
 	return nil
 }
@@ -180,13 +183,13 @@ func (c *Client) tryCandidateAuth(request request.Request, response responselib.
 		return false
 	}
 
-	version, _, err := util.GetVersion(c.GetServer())
+	agentInfo, err := util.GetInfo(c.GetServer())
 	if err != nil {
 		return false
 	}
 
 	// Check if the agent version is less than or equal to 4.2.4.
-	if auth.VERSION_4_2_4.BeforeOrEquals(version) {
+	if auth.VERSION_4_2_4.BeforeOrEquals(agentInfo.Version) {
 		// For this version, when an UnauthorizedError is returned, it may indicate issues other than just a unauthorized error.
 		// Therefore, we need to reconfirm the authentication version and attempt the request again instead of immediately using the candidate.
 		if err = c.reconfirmAuthVersion(); err != nil {
