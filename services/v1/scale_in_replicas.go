@@ -19,8 +19,6 @@ package v1
 import (
 	"fmt"
 
-	"github.com/pkg/errors"
-
 	"github.com/oceanbase/obshell-sdk-go/model"
 	"github.com/oceanbase/obshell-sdk-go/sdk/request"
 	"github.com/oceanbase/obshell-sdk-go/sdk/response"
@@ -73,9 +71,10 @@ func (c *Client) ScaleInReplicas(tenantName string, zones []string) (*model.DagD
 // You can check or operater the task through the DagDetailDTO.
 func (c *Client) ScaleInReplicasWithRequest(request *ScaleInReplicasRequest) (dag *model.DagDetailDTO, err error) {
 	response := c.createScaleInReplicasResponse()
-	err = c.Execute(request, response)
-	dag = response.DagDetailDTO
-	return
+	if err = c.Execute(request, response); err != nil {
+		return nil, err
+	}
+	return response.DagDetailDTO, nil
 }
 
 // ScaleInReplicasSyncWithRequest returns a DagDetailDTO and an error, when the task is completed successfully, the error will be nil.
@@ -85,7 +84,7 @@ func (c *Client) ScaleInReplicasWithRequest(request *ScaleInReplicasRequest) (da
 func (c *Client) ScaleInReplicasSyncWithRequest(request *ScaleInReplicasRequest) (*model.DagDetailDTO, error) {
 	dag, err := c.ScaleInReplicasWithRequest(request)
 	if err != nil {
-		return nil, errors.Wrap(err, "request failed")
+		return nil, err
 	}
 	return c.WaitDagSucceed(dag.GenericID)
 }

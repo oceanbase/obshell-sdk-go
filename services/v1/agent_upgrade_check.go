@@ -17,8 +17,6 @@
 package v1
 
 import (
-	"github.com/pkg/errors"
-
 	"github.com/oceanbase/obshell-sdk-go/model"
 	"github.com/oceanbase/obshell-sdk-go/sdk/request"
 	"github.com/oceanbase/obshell-sdk-go/sdk/response"
@@ -85,9 +83,10 @@ func (c *Client) UpgradeAgentCheck(version, release string) (*model.DagDetailDTO
 // You can check or operater the task through the DagDetailDTO.
 func (c *Client) UpgradeAgentCheckWithRequest(req *UpgradeAgentCheckRequest) (dag *model.DagDetailDTO, err error) {
 	response := c.createUpgradeAgentCheckResponse()
-	err = c.Execute(req, response)
-	dag = response.DagDetailDTO
-	return
+	if err = c.Execute(req, response); err != nil {
+		return nil, err
+	}
+	return response.DagDetailDTO, nil
 }
 
 // UpgradeAgentCheckSyncWithRequest returns a DagDetailDTO and an error, when the upgrade check task is completed successfully, the error will be nil.
@@ -97,7 +96,7 @@ func (c *Client) UpgradeAgentCheckWithRequest(req *UpgradeAgentCheckRequest) (da
 func (c *Client) UpgradeAgentCheckSyncWithRequest(req *UpgradeAgentCheckRequest) (*model.DagDetailDTO, error) {
 	dag, err := c.UpgradeAgentCheckWithRequest(req)
 	if err != nil {
-		return nil, errors.Wrap(err, "request failed")
+		return nil, err
 	}
 	return c.WaitDagSucceed(dag.GenericID)
 }

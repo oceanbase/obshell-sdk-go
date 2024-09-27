@@ -75,7 +75,9 @@ func (c *Client) GetDag(dagId string) (*model.DagDetailDTO, error) {
 // If the error is non-nil, the DagDetailDTO will be nil.
 func (c *Client) GetDagWithRequest(req *GetDagRequest) (dag *model.DagDetailDTO, err error) {
 	response := c.createGetDagResponse()
-	err = c.Execute(req, response)
+	if err = c.Execute(req, response); err != nil {
+		return nil, err
+	}
 	return response.DagDetailDTO, err
 }
 

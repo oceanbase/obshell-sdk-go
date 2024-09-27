@@ -19,8 +19,6 @@ package v1
 import (
 	"fmt"
 
-	"github.com/pkg/errors"
-
 	"github.com/oceanbase/obshell-sdk-go/model"
 	"github.com/oceanbase/obshell-sdk-go/sdk/request"
 	"github.com/oceanbase/obshell-sdk-go/sdk/response"
@@ -102,9 +100,10 @@ func (c *Client) ModifyTenantReplicas(tenantName string, param []ZoneParam) (*mo
 // You can check or operater the task through the DagDetailDTO.
 func (c *Client) ModifyTenantReplicasWithRequest(request *ModifyTenantReplicasRequest) (dag *model.DagDetailDTO, err error) {
 	response := c.createModifyTenantReplicasResponse()
-	err = c.Execute(request, response)
-	dag = response.DagDetailDTO
-	return
+	if err = c.Execute(request, response); err != nil {
+		return nil, err
+	}
+	return response.DagDetailDTO, nil
 }
 
 // ModifyTenantReplicasSyncWithRequest returns a DagDetailDTO and an error, when the task is completed successfully, the error will be nil.
@@ -114,7 +113,7 @@ func (c *Client) ModifyTenantReplicasWithRequest(request *ModifyTenantReplicasRe
 func (c *Client) ModifyTenantReplicasSyncWithRequest(request *ModifyTenantReplicasRequest) (*model.DagDetailDTO, error) {
 	dag, err := c.ModifyTenantReplicasWithRequest(request)
 	if err != nil {
-		return nil, errors.Wrap(err, "request failed")
+		return nil, err
 	}
 	return c.WaitDagSucceed(dag.GenericID)
 }

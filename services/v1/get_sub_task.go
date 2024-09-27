@@ -63,6 +63,8 @@ func (c *Client) GetSubTask(id string) (*model.TaskDetailDTO, error) {
 // If the error is non-nil, the TaskDetailDTO will be nil.
 func (c *Client) GetSubTaskWithRequest(req *GetSubTaskRequest) (SubTask *model.TaskDetailDTO, err error) {
 	response := c.createGetSubTaskResponse()
-	err = c.Execute(req, response)
+	if err = c.Execute(req, response); err != nil {
+		return nil, err
+	}
 	return response.TaskDetailDTO, err
 }

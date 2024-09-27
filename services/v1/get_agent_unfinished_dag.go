@@ -58,6 +58,8 @@ func (c *Client) GetAgentUnfinishedDags() (dags []*model.DagDetailDTO, err error
 // If you don't to show detail of the dag, you can need to create a GetAgentUnfinishedDagsRequest and call SetShowDetail(false).
 func (c *Client) GetAgentUnfinishedDagsWithRequest(req *GetAgentUnfinishedDagsRequest) (dags []*model.DagDetailDTO, err error) {
 	resp := response.NewMutilTaskReponse()
-	err = c.Execute(req, resp)
+	if err = c.Execute(req, resp); err != nil {
+		return nil, err
+	}
 	return resp.Contents, err
 }

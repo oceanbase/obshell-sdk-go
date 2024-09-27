@@ -66,6 +66,8 @@ func (c *Client) GetGitInfo() (ObGitInfoResp *GitInfo, err error) {
 // If the error is non-nil, the ObGitInfoResp will be nil.
 func (c *Client) GetGitInfoWithRequest(req *GetGitInfoRequest) (ObGitInfoResp *GitInfo, err error) {
 	response := c.createGetGitInfoResponse()
-	err = c.Execute(req, response)
+	if err = c.Execute(req, response); err != nil {
+		return nil, err
+	}
 	return response.GitInfo, err
 }

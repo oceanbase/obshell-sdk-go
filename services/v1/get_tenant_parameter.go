@@ -63,6 +63,8 @@ func (c *Client) GetTenantParameter(tenantName string, parameterName string) (pa
 // If the error is non-nil, the *ParameterInfo will be nil.
 func (c *Client) GetTenantParameterWithRequest(req *GetTenantParameterRequest) (paramerter *model.ParameterInfo, err error) {
 	response := c.createGetTenantParameterResponse()
-	err = c.Execute(req, response)
+	if err = c.Execute(req, response); err != nil {
+		return nil, err
+	}
 	return response.ParameterInfo, err
 }

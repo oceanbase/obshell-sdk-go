@@ -22,7 +22,6 @@ import (
 	"github.com/oceanbase/obshell-sdk-go/model"
 	"github.com/oceanbase/obshell-sdk-go/sdk/request"
 	"github.com/oceanbase/obshell-sdk-go/sdk/response"
-	"github.com/pkg/errors"
 )
 
 type PurgeRecyclebinTenantRequest struct {
@@ -62,9 +61,10 @@ func (c *Client) PurgeRecyclebinTenant(tenantName string) (dag *model.DagDetailD
 // You can check or operater the task through the DagDetailDTO.
 func (c *Client) PurgeRecyclebinTenantWithRequest(request *PurgeRecyclebinTenantRequest) (dag *model.DagDetailDTO, err error) {
 	response := c.createPurgeRecyclebinTenantResponse()
-	err = c.Execute(request, response)
-	dag = response.DagDetailDTO
-	return
+	if err = c.Execute(request, response); err != nil {
+		return nil, err
+	}
+	return response.DagDetailDTO, nil
 }
 
 // PurgeRecyclebinTenantSyncWithRequest returns a DagDetailDTO and an error.
@@ -74,7 +74,7 @@ func (c *Client) PurgeRecyclebinTenantWithRequest(request *PurgeRecyclebinTenant
 // If the tenant is not exist in recyclebin, the DagDetailDTO will be nil.
 func (c *Client) PurgeRecyclebinTenantSyncWithRequest(request *PurgeRecyclebinTenantRequest) (dag *model.DagDetailDTO, err error) {
 	if dag, err = c.PurgeRecyclebinTenantWithRequest(request); err != nil {
-		return nil, errors.Wrap(err, "request failed")
+		return nil, err
 	}
 	if dag == nil || dag.GenericDTO == nil {
 		return nil, nil

@@ -60,6 +60,8 @@ func (c *Client) GetInfo() (ObInfoResp *model.AgentRunStatus, err error) {
 // If the error is non-nil, the AgentRunStatus will be nil.
 func (c *Client) GetInfoWithRequest(req *GetInfoRequest) (ObInfoResp *model.AgentRunStatus, err error) {
 	response := c.createGetInfoResponse()
-	err = c.Execute(req, response)
+	if err = c.Execute(req, response); err != nil {
+		return nil, err
+	}
 	return response.AgentRunStatus, err
 }

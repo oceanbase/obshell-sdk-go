@@ -22,7 +22,6 @@ import (
 	"github.com/oceanbase/obshell-sdk-go/model"
 	"github.com/oceanbase/obshell-sdk-go/sdk/request"
 	"github.com/oceanbase/obshell-sdk-go/sdk/response"
-	"github.com/pkg/errors"
 )
 
 type SetTenantPrimaryZoneRequest struct {
@@ -66,7 +65,7 @@ func (c *Client) SetTenantPrimaryZone(tenantName, newName string) (*model.DagDet
 func (c *Client) SetTenantPrimaryZoneSyncWithRequest(request *SetTenantPrimaryZoneRequest) (*model.DagDetailDTO, error) {
 	dag, err := c.SetTenantPrimaryZoneWithRequest(request)
 	if err != nil {
-		return nil, errors.Wrap(err, "request failed")
+		return nil, err
 	}
 	return c.WaitDagSucceed(dag.GenericID)
 }
@@ -74,7 +73,8 @@ func (c *Client) SetTenantPrimaryZoneSyncWithRequest(request *SetTenantPrimaryZo
 // SetTenantPrimaryZoneWithRequest sets the primary zone of a tenant with a SetTenantPrimaryZoneRequest.
 func (c *Client) SetTenantPrimaryZoneWithRequest(request *SetTenantPrimaryZoneRequest) (*model.DagDetailDTO, error) {
 	response := c.createSetTenantPrimaryZoneResponse()
-	err := c.Execute(request, response)
-	dag := response.DagDetailDTO
-	return dag, err
+	if err := c.Execute(request, response); err != nil {
+		return nil, err
+	}
+	return response.DagDetailDTO, nil
 }

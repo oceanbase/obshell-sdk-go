@@ -65,6 +65,8 @@ func (c *Client) GetAllTenantOverview() (tenants []model.TenantOverview, err err
 // If the error is non-nil, the []TenantOverview will be empty.
 func (c *Client) GetAllTenantOverviewWithRequest(req *GetAllTenantOverviewRequest) (tenants []model.TenantOverview, err error) {
 	response := c.createGetAllTenantOverviewResponse()
-	err = c.Execute(req, response)
+	if err = c.Execute(req, response); err != nil {
+		return nil, err
+	}
 	return response.Tenants, err
 }

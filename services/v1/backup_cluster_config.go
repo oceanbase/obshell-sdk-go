@@ -17,8 +17,6 @@
 package v1
 
 import (
-	"github.com/pkg/errors"
-
 	"github.com/oceanbase/obshell-sdk-go/model"
 	"github.com/oceanbase/obshell-sdk-go/sdk/request"
 	"github.com/oceanbase/obshell-sdk-go/sdk/response"
@@ -135,7 +133,7 @@ func (c *Client) PostClusterBackupConfig(dataBaseUri string) (*model.DagDetailDT
 func (c *Client) ClusterBackupConfigWithRequest(req *ClusterBackupConfigRequest) (*model.DagDetailDTO, error) {
 	response := c.createClusterBackupConfigResponse()
 	if err := c.Execute(req, response); err != nil {
-		return nil, errors.Wrap(err, "request failed")
+		return nil, err
 	}
 	return response.DagDetailDTO, nil
 }
@@ -213,7 +211,7 @@ func (c *Client) PostClusterBackup() (*model.DagDetailDTO, error) {
 func (c *Client) ClusterBackupWithRequest(req *ClusterBackupRequest) (*model.DagDetailDTO, error) {
 	response := c.createClusterBackupResponse()
 	if err := c.Execute(req, response); err != nil {
-		return nil, errors.Wrap(err, "request failed")
+		return nil, err
 	}
 	return response.DagDetailDTO, nil
 }
@@ -375,7 +373,7 @@ func (c *Client) GetClusterBackupOverview() ([]model.CdbObBackupTask, error) {
 func (c *Client) GetClusterBackupOverviewWithRequest(req *ClusterBackupOverviewRequest) ([]model.CdbObBackupTask, error) {
 	response := c.createClusterBackupOverviewResponse()
 	if err := c.Execute(req, response); err != nil {
-		return nil, errors.Wrap(err, "request failed")
+		return nil, err
 	}
 	return response.Statuses, nil
 }

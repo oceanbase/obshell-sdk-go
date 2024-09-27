@@ -17,8 +17,6 @@
 package v1
 
 import (
-	"github.com/pkg/errors"
-
 	"github.com/oceanbase/obshell-sdk-go/model"
 	"github.com/oceanbase/obshell-sdk-go/sdk/request"
 	"github.com/oceanbase/obshell-sdk-go/sdk/response"
@@ -160,9 +158,10 @@ func (c *Client) CreateTenant(name string, zoneList []ZoneParam) (*model.DagDeta
 // You can check or operater the task through the DagDetailDTO.
 func (c *Client) CreateTenantWithRequest(request *CreateTenantRequest) (dag *model.DagDetailDTO, err error) {
 	response := c.newCreateTenantResponse()
-	err = c.Execute(request, response)
-	dag = response.DagDetailDTO
-	return
+	if err = c.Execute(request, response); err != nil {
+		return nil, err
+	}
+	return response.DagDetailDTO, nil
 }
 
 // CreateTenantSyncWithRequest returns a DagDetailDTO and an error, when the task is completed successfully, the error will be nil.
@@ -172,7 +171,7 @@ func (c *Client) CreateTenantWithRequest(request *CreateTenantRequest) (dag *mod
 func (c *Client) CreateTenantSyncWithRequest(request *CreateTenantRequest) (*model.DagDetailDTO, error) {
 	dag, err := c.CreateTenantWithRequest(request)
 	if err != nil {
-		return nil, errors.Wrap(err, "request failed")
+		return nil, err
 	}
 	return c.WaitDagSucceed(dag.GenericID)
 }

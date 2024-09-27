@@ -17,8 +17,6 @@
 package v1
 
 import (
-	"github.com/pkg/errors"
-
 	"github.com/oceanbase/obshell-sdk-go/model"
 	"github.com/oceanbase/obshell-sdk-go/sdk/request"
 	"github.com/oceanbase/obshell-sdk-go/sdk/response"
@@ -93,9 +91,10 @@ func (c *Client) UpgradeOb(version, release, mode string) (*model.DagDetailDTO, 
 // You can check or operater the task through the DagDetailDTO.
 func (c *Client) UpgradeObWithRequest(req *UpgradeObRequest) (dag *model.DagDetailDTO, err error) {
 	response := c.createUpgradeObResponse()
-	err = c.Execute(req, response)
-	dag = response.DagDetailDTO
-	return
+	if err = c.Execute(req, response); err != nil {
+		return nil, err
+	}
+	return response.DagDetailDTO, nil
 }
 
 // UpgradeObSyncWithRequest returns a DagDetailDTO and an error, when the upgrade ob task is completed successfully, the error will be nil.
@@ -105,7 +104,7 @@ func (c *Client) UpgradeObWithRequest(req *UpgradeObRequest) (dag *model.DagDeta
 func (c *Client) UpgradeObSyncWithRequest(req *UpgradeObRequest) (*model.DagDetailDTO, error) {
 	dag, err := c.UpgradeObWithRequest(req)
 	if err != nil {
-		return nil, errors.Wrap(err, "request failed")
+		return nil, err
 	}
 	return c.WaitDagSucceedWithRetry(dag.GenericID, 600)
 }

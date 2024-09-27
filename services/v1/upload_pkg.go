@@ -120,6 +120,8 @@ func (c *Client) UploadPkgWithRequest(req *UploadPkgRequest) (UploadPkgResp *Upg
 		return nil, err
 	}
 	response := c.createUploadPkgResponse()
-	err = c.Execute(req, response)
+	if err = c.Execute(req, response); err != nil {
+		return nil, err
+	}
 	return response.UpgradePkgInfo, err
 }

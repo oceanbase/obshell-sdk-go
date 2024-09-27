@@ -59,6 +59,8 @@ func (c *Client) GetClusterUnfinishedDags() (dag []*model.DagDetailDTO, err erro
 // If you don't want to show detail of the dag, you can need to create a GetClusterUnfinishedDagsRequest and call SetShowDetail(false).
 func (c *Client) GetClusterUnfinishedDagsWithRequest(req *GetClusterUnfinishedDagsRequest) (dag []*model.DagDetailDTO, err error) {
 	resp := response.NewMutilTaskReponse()
-	err = c.Execute(req, resp)
+	if err = c.Execute(req, resp); err != nil {
+		return nil, err
+	}
 	return resp.Contents, err
 }

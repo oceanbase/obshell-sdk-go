@@ -17,8 +17,6 @@
 package v1
 
 import (
-	"github.com/pkg/errors"
-
 	"github.com/oceanbase/obshell-sdk-go/model"
 	"github.com/oceanbase/obshell-sdk-go/sdk/request"
 	"github.com/oceanbase/obshell-sdk-go/sdk/response"
@@ -53,8 +51,7 @@ func (c *Client) NewInitRequest() *InitRequest {
 // You can check or operater the task through the DagDetailDTO.
 func (c *Client) InitWithRequest(req *InitRequest) (*model.DagDetailDTO, error) {
 	response := c.createInitResponse()
-	err := c.Execute(req, response)
-	if err != nil {
+	if err := c.Execute(req, response); err != nil {
 		return nil, err
 	}
 	return response.DagDetailDTO, nil
@@ -75,7 +72,7 @@ func (c *Client) Init() (*model.DagDetailDTO, error) {
 func (c *Client) InitSyncWithRequest(req *InitRequest) (*model.DagDetailDTO, error) {
 	dag, err := c.InitWithRequest(req)
 	if err != nil {
-		return nil, errors.Wrap(err, "request failed")
+		return nil, err
 	}
 	return c.WaitDagSucceed(dag.GenericID)
 }

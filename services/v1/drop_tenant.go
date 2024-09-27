@@ -19,8 +19,6 @@ package v1
 import (
 	"fmt"
 
-	"github.com/pkg/errors"
-
 	"github.com/oceanbase/obshell-sdk-go/model"
 	"github.com/oceanbase/obshell-sdk-go/sdk/request"
 	"github.com/oceanbase/obshell-sdk-go/sdk/response"
@@ -83,9 +81,10 @@ func (c *Client) DropTenant(tenantName string) (*model.DagDetailDTO, error) {
 // If the tenant is not exist, the DagDetailDTO will be nil.
 func (c *Client) DropTenantWithRequest(request *DropTenantRequest) (dag *model.DagDetailDTO, err error) {
 	response := c.createDropTenantResponse()
-	err = c.Execute(request, response)
-	dag = response.DagDetailDTO
-	return
+	if err = c.Execute(request, response); err != nil {
+		return nil, err
+	}
+	return response.DagDetailDTO, nil
 }
 
 // DropTenantSyncWithRequest returns a DagDetailDTO and an error, when the task is completed successfully, the error will be nil.
@@ -96,7 +95,7 @@ func (c *Client) DropTenantWithRequest(request *DropTenantRequest) (dag *model.D
 // If the tenant is not exist, the DagDetailDTO will be nil.
 func (c *Client) DropTenantSyncWithRequest(request *DropTenantRequest) (dag *model.DagDetailDTO, err error) {
 	if dag, err = c.DropTenantWithRequest(request); err != nil {
-		return nil, errors.Wrap(err, "request failed")
+		return nil, err
 	}
 	if dag == nil || dag.GenericDTO == nil {
 		return nil, nil

@@ -19,8 +19,6 @@ package v1
 import (
 	"fmt"
 
-	"github.com/pkg/errors"
-
 	"github.com/oceanbase/obshell-sdk-go/model"
 	"github.com/oceanbase/obshell-sdk-go/sdk/auth"
 	"github.com/oceanbase/obshell-sdk-go/sdk/request"
@@ -106,7 +104,9 @@ func (c *Client) ConfigObclusterWithRequest(req *ConfigObclusterRequest) (dag *m
 	if err = req.encryptPassword(); err != nil {
 		return
 	}
-	err = c.Execute(req, response)
+	if err = c.Execute(req, response); err != nil {
+		return nil, err
+	}
 	if err == nil {
 		c.setPasswordCandidateAuth(req.password)
 	}
@@ -121,7 +121,7 @@ func (c *Client) ConfigObclusterWithRequest(req *ConfigObclusterRequest) (dag *m
 func (c *Client) ConfigObclusterSyncWithRequest(request *ConfigObclusterRequest) (*model.DagDetailDTO, error) {
 	dag, err := c.ConfigObclusterWithRequest(request)
 	if err != nil {
-		return nil, errors.Wrap(err, "request failed")
+		return nil, err
 	}
 	return c.WaitDagSucceed(dag.GenericID)
 }

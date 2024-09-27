@@ -73,6 +73,8 @@ func (c *Client) GetNode(nodeId string) (*model.NodeDetailDTO, error) {
 // If the error is non-nil, the NodeDetailDTO will be nil.
 func (c *Client) GetNodeWithRequest(req *GetNodeRequest) (node *model.NodeDetailDTO, err error) {
 	response := c.createGetNodeResponse()
-	err = c.Execute(req, response)
+	if err = c.Execute(req, response); err != nil {
+		return nil, err
+	}
 	return response.NodeDetailDTO, err
 }

@@ -19,8 +19,6 @@ package v1
 import (
 	"fmt"
 
-	"github.com/pkg/errors"
-
 	"github.com/oceanbase/obshell-sdk-go/model"
 	"github.com/oceanbase/obshell-sdk-go/sdk/request"
 	"github.com/oceanbase/obshell-sdk-go/sdk/response"
@@ -131,7 +129,7 @@ func (c *Client) TenantBackupConfig(tenantName, dataBaseUri, archiveBaseUri stri
 func (c *Client) TenantBackupConfigWithRequest(req *TenantBackupConfigRequest) (*model.DagDetailDTO, error) {
 	response := c.createPostTenantBackupConfigResponse()
 	if err := c.Execute(req, response); err != nil {
-		return nil, errors.Wrap(err, "request failed")
+		return nil, err
 	}
 	return response.DagDetailDTO, nil
 }
@@ -140,7 +138,7 @@ func (c *Client) TenantBackupConfigWithRequest(req *TenantBackupConfigRequest) (
 func (c *Client) TenantBackupConfigSyncWithRequest(req *TenantBackupConfigRequest) (*model.DagDetailDTO, error) {
 	dag, err := c.TenantBackupConfigWithRequest(req)
 	if err != nil {
-		return nil, errors.Wrap(err, "request failed")
+		return nil, err
 	}
 	return c.WaitDagSucceed(dag.GenericID)
 }
@@ -205,7 +203,7 @@ func (c *Client) PostTenantBackup(tenantName string) (*model.DagDetailDTO, error
 func (c *Client) TenantBackupWithRequest(req *TenantBackupRequest) (*model.DagDetailDTO, error) {
 	response := c.createPostTenantBackupResponse()
 	if err := c.Execute(req, response); err != nil {
-		return nil, errors.Wrap(err, "request failed")
+		return nil, err
 	}
 	return response.DagDetailDTO, nil
 }
@@ -214,7 +212,7 @@ func (c *Client) TenantBackupWithRequest(req *TenantBackupRequest) (*model.DagDe
 func (c *Client) TenantBackupSyncWithRequest(req *TenantBackupRequest) (*model.DagDetailDTO, error) {
 	dag, err := c.TenantBackupWithRequest(req)
 	if err != nil {
-		return nil, errors.Wrap(err, "request failed")
+		return nil, err
 	}
 	return c.WaitDagSucceed(dag.GenericID)
 }
@@ -260,21 +258,13 @@ func (r *TenantBackupStatusPatchRequest) SetStatus(status string) *TenantBackupS
 // PatchTenantBackupStatus sends a PATCH request to update the tenant backup status.
 func (c *Client) PatchTenantBackupStatus(tenantName string) error {
 	req := c.NewTenantBackupStatusPatchRequest(tenantName)
-	return c.TenantBackupStatusSyncWithPatchRequest(req)
+	return c.TenantBackupStatusWithPatchRequest(req)
 }
 
 // TenantBackupStatusWithPatchRequest executes the PATCH request to update tenant backup status.
 func (c *Client) TenantBackupStatusWithPatchRequest(req *TenantBackupStatusPatchRequest) error {
 	response := c.createTenantBackupStatusResponse()
 	return c.Execute(req, response)
-}
-
-// TenantBackupStatusSyncWithPatchRequest synchronously executes the PATCH request for tenant backup status.
-func (c *Client) TenantBackupStatusSyncWithPatchRequest(req *TenantBackupStatusPatchRequest) error {
-	if err := c.TenantBackupStatusWithPatchRequest(req); err != nil {
-		return errors.Wrap(err, "request failed")
-	}
-	return nil
 }
 
 type TenantBackupStatusResponse struct {
@@ -314,21 +304,13 @@ func (r *TenantLogStatusPatchRequest) SetStatus(status string) *TenantLogStatusP
 // PatchTenantLogStatus sends a PATCH request to update the tenant log status.
 func (c *Client) PatchTenantLogStatus(tenantName string) error {
 	req := c.NewTenantLogStatusPatchRequest(tenantName)
-	return c.TenantLogStatusSyncWithPatchRequest(req)
+	return c.TenantLogStatusWithPatchRequest(req)
 }
 
 // TenantLogStatusWithPatchRequest executes the PATCH request to update tenant log status.
 func (c *Client) TenantLogStatusWithPatchRequest(req *TenantLogStatusPatchRequest) error {
 	response := c.createTenantLogStatusResponse()
 	return c.Execute(req, response)
-}
-
-// TenantLogStatusSyncWithPatchRequest synchronously executes the PATCH request for tenant log status.
-func (c *Client) TenantLogStatusSyncWithPatchRequest(req *TenantLogStatusPatchRequest) error {
-	if err := c.TenantLogStatusWithPatchRequest(req); err != nil {
-		return errors.Wrap(err, "request failed")
-	}
-	return nil
 }
 
 type TenantLogStatusResponse struct {
@@ -380,7 +362,7 @@ func (c *Client) GetTenantBackupOverview(tenantName string) (*model.CdbObBackupT
 func (c *Client) GetTenantBackupOverviewWithRequest(req *TenantBackupOverviewRequest) (*model.CdbObBackupTask, error) {
 	response := c.createTenantBackupOverviewResponse()
 	if err := c.Execute(req, response); err != nil {
-		return nil, errors.Wrap(err, "request failed")
+		return nil, err
 	}
 	return &response.CdbObBackupTask, nil
 }

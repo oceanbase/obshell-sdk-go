@@ -76,6 +76,8 @@ func (c *Client) GetTenantParameters(tenantName string, filter ...string) (dags 
 // If the error is non-nil, the []ParameterInfo will be empty.
 func (c *Client) GetTenantParametersWithRequest(req *GetTenantParametersRequest) (unitConfigs []model.ParameterInfo, err error) {
 	response := c.createGetTenantParametersResponse()
-	err = c.Execute(req, response)
+	if err = c.Execute(req, response); err != nil {
+		return nil, err
+	}
 	return response.Contents, err
 }

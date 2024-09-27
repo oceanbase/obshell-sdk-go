@@ -17,8 +17,6 @@
 package v1
 
 import (
-	"github.com/pkg/errors"
-
 	"github.com/oceanbase/obshell-sdk-go/model"
 	"github.com/oceanbase/obshell-sdk-go/sdk/request"
 	"github.com/oceanbase/obshell-sdk-go/sdk/response"
@@ -69,9 +67,10 @@ func (c *Client) Remove(ip string, port int) (*model.DagDetailDTO, error) {
 // You can check or operater the task through the DagDetailDTO.
 func (c *Client) RemoveWithRequest(req *RemoveRequest) (dag *model.DagDetailDTO, err error) {
 	response := c.createRemoveResponse()
-	err = c.Execute(req, response)
-	dag = response.DagDetailDTO
-	return
+	if err = c.Execute(req, response); err != nil {
+		return nil, err
+	}
+	return response.DagDetailDTO, nil
 }
 
 // RemoveSyncWithRequest returns a DagDetailDTO and an error, when the remove task is completed successfully, the error will be nil.
@@ -80,7 +79,7 @@ func (c *Client) RemoveWithRequest(req *RemoveRequest) (dag *model.DagDetailDTO,
 // You can check or operater the task through the DagDetailDTO.
 func (c *Client) RemoveSyncWithRequest(req *RemoveRequest) (dag *model.DagDetailDTO, err error) {
 	if dag, err = c.RemoveWithRequest(req); err != nil {
-		return nil, errors.Wrap(err, "request failed")
+		return nil, err
 	} else if dag != nil && dag.GenericDTO != nil {
 		return c.WaitDagSucceed(dag.GenericID)
 	}

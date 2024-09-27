@@ -61,6 +61,8 @@ func (c *Client) GetTenantInfo(tenantName string) (tenants *model.TenantInfo, er
 // GetTenantInfoWithRequest returns a *TenantInfoInfo and an error.
 func (c *Client) GetTenantInfoWithRequest(req *GetTenantInfoRequest) (tenants *model.TenantInfo, err error) {
 	response := c.createGetTenantInfoResponse()
-	err = c.Execute(req, response)
+	if err = c.Execute(req, response); err != nil {
+		return nil, err
+	}
 	return response.TenantInfo, err
 }

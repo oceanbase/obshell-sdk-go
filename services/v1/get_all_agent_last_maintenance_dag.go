@@ -60,6 +60,8 @@ func (c *Client) GetAllAgentLastMaintenanceDag() (dags []*model.DagDetailDTO, er
 // Notice: versions of obshell prior to 4.2.3 do not support this method.
 func (c *Client) GetAllAgentLastMaintenanceDagWithRequest(req *GetAllAgentLastMaintenanceDagRequest) (dags []*model.DagDetailDTO, err error) {
 	resp := response.NewMutilTaskReponse()
-	err = c.Execute(req, resp)
+	if err = c.Execute(req, resp); err != nil {
+		return nil, err
+	}
 	return resp.Contents, err
 }

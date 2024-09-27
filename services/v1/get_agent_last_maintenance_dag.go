@@ -68,6 +68,8 @@ func (c *Client) GetAgentLastMaintenanceDag() (dag *model.DagDetailDTO, err erro
 // If you don't want to show detail of the dag, you can need to create a GetAgentUnfinishedDagsRequest and call SetShowDetail(false).
 func (c *Client) GetAgentLastMaintenanceDagWithRequest(req *GetAgentLastMaintenanceDagRequest) (dag *model.DagDetailDTO, err error) {
 	response := c.createGetAgentLastMaintenanceDagResponse()
-	err = c.Execute(req, response)
+	if err = c.Execute(req, response); err != nil {
+		return nil, err
+	}
 	return response.DagDetailDTO, err
 }

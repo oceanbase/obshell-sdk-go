@@ -61,6 +61,8 @@ func (c *Client) GetTenantVariable(tenantName string, variableName string) (vari
 // GetTenantVariableWithRequest returns a *VariableInfo and an error.
 func (c *Client) GetTenantVariableWithRequest(req *GetTenantVariableRequest) (variable *model.VariableInfo, err error) {
 	response := c.createGetTenantVariableResponse()
-	err = c.Execute(req, response)
+	if err = c.Execute(req, response); err != nil {
+		return nil, err
+	}
 	return response.VariableInfo, err
 }

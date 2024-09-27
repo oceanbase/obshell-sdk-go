@@ -65,6 +65,8 @@ func (c *Client) GetAllResourcePools() (dags []model.ResourcePoolInfo, err error
 // If the error is non-nil, the []*ResourcePoolInfo will be empty.
 func (c *Client) GetAllResourcePoolsWithRequest(req *GetAllResourcePoolsRequest) (dags []model.ResourcePoolInfo, err error) {
 	response := c.createGetAllResourcePoolsResponse()
-	err = c.Execute(req, response)
+	if err = c.Execute(req, response); err != nil {
+		return nil, err
+	}
 	return response.Contents, err
 }

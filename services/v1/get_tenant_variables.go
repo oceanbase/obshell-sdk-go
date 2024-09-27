@@ -71,6 +71,8 @@ func (c *Client) GetTenantVariables(tenantName string, filter ...string) (variab
 // If the error is non-nil, the []VariableInfo will be empty.
 func (c *Client) GetTenantVariablesWithRequest(req *GetTenantVariablesRequest) (variables []model.VariableInfo, err error) {
 	response := c.createGetTenantVariablesResponse()
-	err = c.Execute(req, response)
+	if err = c.Execute(req, response); err != nil {
+		return nil, err
+	}
 	return response.Contents, err
 }

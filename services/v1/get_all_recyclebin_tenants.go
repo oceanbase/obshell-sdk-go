@@ -65,6 +65,8 @@ func (c *Client) GetAllRecyclebinTenants() (tenants []model.RecycledTenantOverVi
 // If the error is non-nil, the []RecycledTenantOverView will be empty.
 func (c *Client) GetAllRecyclebinTenantsWithRequest(req *GetAllRecyclebinTenantsRequest) (tenants []model.RecycledTenantOverView, err error) {
 	response := c.createGetAllRecyclebinTenantsResponse()
-	err = c.Execute(req, response)
+	if err = c.Execute(req, response); err != nil {
+		return nil, err
+	}
 	return response.Contents, err
 }

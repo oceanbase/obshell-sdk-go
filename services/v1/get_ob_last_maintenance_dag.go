@@ -68,6 +68,8 @@ func (c *Client) GetObLastMaintenanceDag() (dag *model.DagDetailDTO, err error) 
 // If you don't want to show detail of the dag, you can need to create a GetObLastMaintenanceDagRequestRequest and call SetShowDetail(false).
 func (c *Client) GetObLastMaintenanceDagWithRequest(req *GetObLastMaintenanceDagRequest) (dag *model.DagDetailDTO, err error) {
 	response := c.createGetObLastMaintenanceDagResponse()
-	err = c.Execute(req, response)
+	if err = c.Execute(req, response); err != nil {
+		return nil, err
+	}
 	return response.DagDetailDTO, err
 }

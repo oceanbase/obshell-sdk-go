@@ -86,9 +86,10 @@ func (c *Client) JoinWithRequest(req *JoinRequest) (dag *model.DagDetailDTO, err
 	if err != nil {
 		return nil, errors.Wrap(err, "create target client failed")
 	}
-	err = targetClient.Execute(req, response)
-	dag = response.DagDetailDTO
-	return
+	if err = targetClient.Execute(req, response); err != nil {
+		return nil, err
+	}
+	return response.DagDetailDTO, nil
 }
 
 // JoinSyncWithRequest returns a DagDetailDTO and an error, when the join task is completed successfully, the error will be nil.
@@ -98,7 +99,7 @@ func (c *Client) JoinWithRequest(req *JoinRequest) (dag *model.DagDetailDTO, err
 func (c *Client) JoinSyncWithRequest(req *JoinRequest) (*model.DagDetailDTO, error) {
 	dag, err := c.JoinWithRequest(req)
 	if err != nil {
-		return nil, errors.Wrap(err, "request failed")
+		return nil, err
 	}
 	return c.WaitDagSucceed(dag.GenericID)
 }

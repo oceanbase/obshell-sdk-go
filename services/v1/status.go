@@ -60,6 +60,8 @@ func (c *Client) GetStatus() (ObStatusResp *model.AgentStatus, err error) {
 // If the error is non-nil, the AgentStatus will be nil.
 func (c *Client) GetStatusWithRequest(req *GetStatusRequest) (ObStatusResp *model.AgentStatus, err error) {
 	response := c.createGetStatusResponse()
-	err = c.Execute(req, response)
+	if err = c.Execute(req, response); err != nil {
+		return nil, err
+	}
 	return response.AgentStatus, err
 }

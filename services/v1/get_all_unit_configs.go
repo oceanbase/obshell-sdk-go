@@ -65,6 +65,8 @@ func (c *Client) GetAllUnitConfigs() (dags []model.ResourceUnitConfig, err error
 // If the error is non-nil, the []ResourceUnitConfig will be empty.
 func (c *Client) GetAllUnitConfigsWithRequest(req *GetAllUnitConfigsRequest) (unitConfigs []model.ResourceUnitConfig, err error) {
 	response := c.createGetAllUnitConfigsResponse()
-	err = c.Execute(req, response)
+	if err = c.Execute(req, response); err != nil {
+		return nil, err
+	}
 	return response.IterableData.Contents, err
 }

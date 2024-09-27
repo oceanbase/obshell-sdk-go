@@ -61,6 +61,8 @@ func (c *Client) GetObInfo() (ObInfoResp *model.ObInfoResp, err error) {
 // If the error is non-nil, the ObInfoResp will be nil.
 func (c *Client) GetObInfoWithRequest(req *GetObInfoRequest) (ObInfoResp *model.ObInfoResp, err error) {
 	response := c.createGetObInfoResponse()
-	err = c.Execute(req, response)
+	if err = c.Execute(req, response); err != nil {
+		return nil, err
+	}
 	return response.ObInfoResp, err
 }

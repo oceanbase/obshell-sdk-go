@@ -20,8 +20,6 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/pkg/errors"
-
 	"github.com/oceanbase/obshell-sdk-go/model"
 	"github.com/oceanbase/obshell-sdk-go/sdk/request"
 	"github.com/oceanbase/obshell-sdk-go/sdk/response"
@@ -145,11 +143,10 @@ func (c *Client) Restore(dataBackupUri, unitConfigName, tenantName string, zoneL
 // RestoreWithRequest executes the restore operation with the specified request.
 func (c *Client) RestoreWithRequest(req *RestoreRequest) (*model.DagDetailDTO, error) {
 	response := c.createRestoreResponse()
-	err := c.Execute(req, response)
-	if err != nil {
-		return nil, errors.Wrap(err, "request failed")
+	if err := c.Execute(req, response); err != nil {
+		return nil, err
 	}
-	return response.DagDetailDTO, err
+	return response.DagDetailDTO, nil
 
 }
 
@@ -210,9 +207,8 @@ func (c *Client) GetTenantRestoreOverview(tenantName string) (*model.RestoreOver
 // GetTenantRestoreOverviewWithRequest executes the request to get the tenant restore overview.
 func (c *Client) GetTenantRestoreOverviewWithRequest(req *TenantRestoreOverviewRequest) (*model.RestoreOverview, error) {
 	response := c.createTenantRestoreOverviewResponse()
-	err := c.Execute(req, response)
-	if err != nil {
-		return nil, errors.Wrap(err, "request failed")
+	if err := c.Execute(req, response); err != nil {
+		return nil, err
 	}
 	return &response.RestoreOverview, nil
 }
@@ -251,7 +247,9 @@ func (c *Client) CancelRestore(tenantName string) (dag *model.DagDetailDTO, err 
 // CancelRestoreWithRequest cancels a restore operation with the specified request.
 func (c *Client) CancelRestoreWithRequest(req *CancelRestoreRequest) (dag *model.DagDetailDTO, err error) {
 	response := c.createCancelRestoreResponse()
-	err = c.Execute(req, response)
+	if err = c.Execute(req, response); err != nil {
+		return nil, err
+	}
 	return response.DagDetailDTO, err
 }
 
