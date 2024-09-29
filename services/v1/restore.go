@@ -29,21 +29,18 @@ type RestoreApiParam struct {
 	DataBackupUri string  `json:"data_backup_uri" binding:"required"`
 	ArchiveLogUri *string `json:"archive_log_uri"`
 
-	TenantName     string `json:"restore_tenant_name" binding:"required"`
-	UnitConfigName string `json:"unit_config_name" binding:"required"`
-	UnitNum        *int   `json:"unit_num"`
+	TenantName string `json:"restore_tenant_name" binding:"required"`
 
 	Timestamp *time.Time `json:"timestamp" time_format:"2006-01-02T15:04:05.000Z07:00"`
 	SCN       *int64     `json:"scn"`
 
-	ZoneList             []string `json:"zone_list" binding:"required"`
-	PrimaryZone          *string  `json:"primary_zone"`
-	Locality             *string  `json:"locality"`
-	Concurrency          *int     `json:"concurrency"`
-	HaHighThreadScore    *int     `json:"ha_high_thread_score"`
-	FullBackupDecryption *string  `json:"full_backup_decryption"`
-	IncBackupDecryption  *string  `json:"inc_backup_decryption"`
-	KmsEncryptInfo       *string  `json:"kms_encrypt_info"`
+	ZoneList             []ZoneParam `json:"zone_list" binding:"required"` // Tenant zone list with unit config.
+	PrimaryZone          *string     `json:"primary_zone"`
+	Concurrency          *int        `json:"concurrency"`
+	HaHighThreadScore    *int        `json:"ha_high_thread_score"`
+	FullBackupDecryption *string     `json:"full_backup_decryption"`
+	IncBackupDecryption  *string     `json:"inc_backup_decryption"`
+	KmsEncryptInfo       *string     `json:"kms_encrypt_info"`
 }
 
 type RestoreRequest struct {
@@ -52,14 +49,13 @@ type RestoreRequest struct {
 }
 
 // NewRestoreRequest creates a new restore request with the specified parameters.
-func (c *Client) NewRestoreRequest(dataBackupUri, unitConfigName, tenantName string, zoneList []string) *RestoreRequest {
+func (c *Client) NewRestoreRequest(tenantName, dataBackupUri string, zoneList []ZoneParam) *RestoreRequest {
 	req := &RestoreRequest{
 		BaseRequest: request.NewBaseRequest(),
 		param: &RestoreApiParam{
-			DataBackupUri:  dataBackupUri,
-			TenantName:     tenantName,
-			UnitConfigName: unitConfigName,
-			ZoneList:       zoneList,
+			DataBackupUri: dataBackupUri,
+			TenantName:    tenantName,
+			ZoneList:      zoneList,
 		},
 	}
 	req.InitApiInfo("/api/v1/tenant/restore", c.GetHost(), c.GetPort(), "POST")
@@ -70,12 +66,6 @@ func (c *Client) NewRestoreRequest(dataBackupUri, unitConfigName, tenantName str
 
 func (r *RestoreRequest) SetArchiveLogUri(archiveLogUri string) *RestoreRequest {
 	r.param.ArchiveLogUri = &archiveLogUri
-	r.SetBody(r.param)
-	return r
-}
-
-func (r *RestoreRequest) SetUnitNum(unitNum int) *RestoreRequest {
-	r.param.UnitNum = &unitNum
 	r.SetBody(r.param)
 	return r
 }
@@ -94,12 +84,6 @@ func (r *RestoreRequest) SetSCN(scn int64) *RestoreRequest {
 
 func (r *RestoreRequest) SetPrimaryZone(primaryZone string) *RestoreRequest {
 	r.param.PrimaryZone = &primaryZone
-	r.SetBody(r.param)
-	return r
-}
-
-func (r *RestoreRequest) SetLocality(locality string) *RestoreRequest {
-	r.param.Locality = &locality
 	r.SetBody(r.param)
 	return r
 }
@@ -135,8 +119,8 @@ func (r *RestoreRequest) SetKmsEncryptInfo(kmsEncryptInfo string) *RestoreReques
 }
 
 // Restore initiates a restore operation with the given parameters.
-func (c *Client) Restore(dataBackupUri, unitConfigName, tenantName string, zoneList []string) (*model.DagDetailDTO, error) {
-	req := c.NewRestoreRequest(dataBackupUri, unitConfigName, tenantName, zoneList)
+func (c *Client) Restore(dataBackupUri, tenantName string, zoneList []ZoneParam) (*model.DagDetailDTO, error) {
+	req := c.NewRestoreRequest(dataBackupUri, tenantName, zoneList)
 	return c.RestoreSyncWithRequest(req)
 }
 
