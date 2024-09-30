@@ -170,13 +170,12 @@ func (c *Client) NewTenantRestoreOverviewRequest(tenantName string) *TenantResto
 
 type TenantRestoreOverviewResponse struct {
 	*response.OcsAgentResponse
-	model.RestoreOverview `json:"status"`
+	model.RestoreOverview
 }
 
 func (c *Client) createTenantRestoreOverviewResponse() *TenantRestoreOverviewResponse {
 	resp := &TenantRestoreOverviewResponse{
 		OcsAgentResponse: response.NewOcsAgentResponse(),
-		RestoreOverview:  model.RestoreOverview{},
 	}
 	resp.Data = &resp.RestoreOverview
 	return resp

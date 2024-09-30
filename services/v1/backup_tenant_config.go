@@ -338,17 +338,20 @@ func (c *Client) NewTenantBackupOverviewRequest(tenantName string) *TenantBackup
 	return req
 }
 
+type TenantBackupOverview struct {
+	Status model.CdbObBackupTask `json:"status"`
+}
+
 type TenantBackupOverviewResponse struct {
 	*response.OcsAgentResponse
-	model.CdbObBackupTask `json:"status"`
+	TenantBackupOverview
 }
 
 func (c *Client) createTenantBackupOverviewResponse() *TenantBackupOverviewResponse {
 	resp := &TenantBackupOverviewResponse{
 		OcsAgentResponse: response.NewOcsAgentResponse(),
-		CdbObBackupTask:  model.CdbObBackupTask{},
 	}
-	resp.Data = &resp.CdbObBackupTask
+	resp.Data = &resp.TenantBackupOverview
 	return resp
 }
 
@@ -364,5 +367,5 @@ func (c *Client) GetTenantBackupOverviewWithRequest(req *TenantBackupOverviewReq
 	if err := c.Execute(req, response); err != nil {
 		return nil, err
 	}
-	return &response.CdbObBackupTask, nil
+	return &response.TenantBackupOverview.Status, nil
 }

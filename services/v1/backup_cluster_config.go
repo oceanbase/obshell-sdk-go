@@ -349,17 +349,20 @@ func (c *Client) NewClusterBackupOverviewRequest() *ClusterBackupOverviewRequest
 	return req
 }
 
+type ClusterBackupOverview struct {
+	Statuses []model.CdbObBackupTask `json:"statuses"`
+}
+
 type ClusterBackupOverviewResponse struct {
 	*response.OcsAgentResponse
-	Statuses []model.CdbObBackupTask `json:"statuses"`
+	ClusterBackupOverview
 }
 
 func (c *Client) createClusterBackupOverviewResponse() *ClusterBackupOverviewResponse {
 	resp := &ClusterBackupOverviewResponse{
 		OcsAgentResponse: response.NewOcsAgentResponse(),
-		Statuses:         make([]model.CdbObBackupTask, 0),
 	}
-	resp.Data = &resp.Statuses
+	resp.Data = &resp.ClusterBackupOverview
 	return resp
 }
 
