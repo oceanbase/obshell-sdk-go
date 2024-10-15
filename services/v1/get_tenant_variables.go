@@ -35,6 +35,11 @@ func (c *Client) NewGetTenantVariablesRequest(tenantName string, filter ...strin
 	req := &GetTenantVariablesRequest{
 		BaseRequest: request.NewBaseRequest(),
 	}
+	if len(filter) > 0 {
+		req.SetQueryParam("filter", filter[0])
+	} else {
+		req.SetQueryParam("filter", "%")
+	}
 	req.InitApiInfo(fmt.Sprintf("/api/v1/tenant/%s/variables", tenantName), c.GetHost(), c.GetPort(), "GET")
 	req.SetAuthentication()
 	return req

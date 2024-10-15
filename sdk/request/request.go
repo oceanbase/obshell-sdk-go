@@ -163,11 +163,5 @@ func (r *BaseRequest) BuildHttpRequest(context *Context) *resty.Request {
 		req.SetBody(r.body)
 	}
 
-	if r.method == "GET" {
-		for k, v := range r.queryParam {
-			req.SetQueryParam(k, v)
-		}
-	}
-
 	return req
 }
