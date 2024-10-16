@@ -45,11 +45,11 @@ func (c *Client) NewFlashbackRecyclebinTenantRequest(objectOrOriginalName string
 		BaseRequest: request.NewBaseRequest(),
 	}
 	req.SetAuthentication()
+	body := map[string]interface{}{"new_name": nil}
 	if len(newName) > 0 {
-		req.SetBody(map[string]string{
-			"new_name": newName[0],
-		})
+		body["new_name"] = newName[0]
 	}
+	req.SetBody(body)
 	req.InitApiInfo(fmt.Sprintf("/api/v1/recyclebin/tenant/%s", objectOrOriginalName), c.GetHost(), c.GetPort(), "POST")
 	return req
 }

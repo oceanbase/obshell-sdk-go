@@ -17,19 +17,13 @@
 package v1
 
 import (
+	"github.com/oceanbase/obshell-sdk-go/model"
 	"github.com/oceanbase/obshell-sdk-go/sdk/request"
 	"github.com/oceanbase/obshell-sdk-go/sdk/response"
 )
 
 type GetGitInfoRequest struct {
 	*request.BaseRequest
-}
-
-type GitInfo struct {
-	GitBranch        string `json:"branch"`
-	GitCommitId      string `json:"commitId"`
-	GitShortCommitId string `json:"shortCommitId"`
-	GitCommitTime    string `json:"commitTime"`
 }
 
 // NewGetGitInfoRequest return a GetGitInfoRequest, which can be used as the argument for the GetGitInfoWithRequest.
@@ -43,13 +37,13 @@ func (c *Client) NewGetGitInfoRequest() *GetGitInfoRequest {
 
 type GetGitInfoResponse struct {
 	*response.OcsAgentResponse
-	*GitInfo
+	*model.GitInfo
 }
 
 func (c *Client) createGetGitInfoResponse() *GetGitInfoResponse {
 	resp := &GetGitInfoResponse{
 		OcsAgentResponse: response.NewOcsAgentResponse(),
-		GitInfo:          &GitInfo{},
+		GitInfo:          &model.GitInfo{},
 	}
 	resp.Data = resp.GitInfo
 	return resp
@@ -57,14 +51,14 @@ func (c *Client) createGetGitInfoResponse() *GetGitInfoResponse {
 
 // GetGitInfo returns a ObGitInfoResp and an error.
 // If the error is non-nil, the ObGitInfoResp will be nil.
-func (c *Client) GetGitInfo() (ObGitInfoResp *GitInfo, err error) {
+func (c *Client) GetGitInfo() (ObGitInfoResp *model.GitInfo, err error) {
 	req := c.NewGetGitInfoRequest()
 	return c.GetGitInfoWithRequest(req)
 }
 
 // GetGitInfoWithRequest returns a ObGitInfoResp and an error.
 // If the error is non-nil, the ObGitInfoResp will be nil.
-func (c *Client) GetGitInfoWithRequest(req *GetGitInfoRequest) (ObGitInfoResp *GitInfo, err error) {
+func (c *Client) GetGitInfoWithRequest(req *GetGitInfoRequest) (ObGitInfoResp *model.GitInfo, err error) {
 	response := c.createGetGitInfoResponse()
 	if err = c.Execute(req, response); err != nil {
 		return nil, err

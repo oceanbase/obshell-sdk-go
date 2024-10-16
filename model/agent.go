@@ -89,3 +89,10 @@ type Scope struct {
 	Type   string   `json:"type"`
 	Target []string `json:"target"`
 }
+
+type GitInfo struct {
+	GitBranch        string `json:"branch"`
+	GitCommitId      string `json:"commitId"`
+	GitShortCommitId string `json:"shortCommitId"`
+	GitCommitTime    string `json:"commitTime"`
+}
