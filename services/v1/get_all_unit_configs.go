@@ -56,7 +56,7 @@ func (c *Client) createGetAllUnitConfigsResponse() *getAllUnitConfigsResponse {
 
 // GetAllUnitConfigs returns a []ResourceUnitConfig and an error.
 // If the error is non-nil, the []ResourceUnitConfig will be empty.
-func (c *Client) GetAllUnitConfigs() (dags []model.ResourceUnitConfig, err error) {
+func (c *Client) GetAllUnitConfigs() ([]model.ResourceUnitConfig, error) {
 	req := c.NewGetAllUnitConfigsRequest()
 	return c.GetAllUnitConfigsWithRequest(req)
 }

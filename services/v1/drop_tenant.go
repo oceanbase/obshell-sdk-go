@@ -59,6 +59,8 @@ func (c *Client) NewDropTenantRequest(tenantName string) *DropTenantRequest {
 	return req
 }
 
+// SetNeedRecycle sets whether need recycle.
+// If needRecycle is false, the tenant will be dropped purgely no matter whether recyclebin is enabled.
 func (r *DropTenantRequest) SetNeedRecycle(needRecycle bool) *DropTenantRequest {
 	r.param.NeedRecycle = needRecycle
 	r.SetBody(r.param)
@@ -77,7 +79,6 @@ func (c *Client) DropTenant(tenantName string) (*model.DagDetailDTO, error) {
 // the parameter is a DropTenantRequest, which can be created by NewDropTenantRequest.
 // You can use WaitDagSucceed to wait for the task to complete.
 // You can check or operater the task through the DagDetailDTO.
-// The tenant will be dropped purgely no matter whether recyclebin is enabled.
 // If the tenant is not exist, the DagDetailDTO will be nil.
 func (c *Client) DropTenantWithRequest(request *DropTenantRequest) (dag *model.DagDetailDTO, err error) {
 	response := c.createDropTenantResponse()
@@ -91,7 +92,6 @@ func (c *Client) DropTenantWithRequest(request *DropTenantRequest) (dag *model.D
 // the DagDetailDTO is the final status of the task.
 // the parameter is a DropTenantRequest, which can be created by NewDropTenantRequest.
 // You can check or operater the task through the DagDetailDTO.
-// The tenant will be dropped purgely no matter whether recyclebin is enabled.
 // If the tenant is not exist, the DagDetailDTO will be nil.
 func (c *Client) DropTenantSyncWithRequest(request *DropTenantRequest) (dag *model.DagDetailDTO, err error) {
 	if dag, err = c.DropTenantWithRequest(request); err != nil {
