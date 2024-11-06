@@ -16,7 +16,7 @@
 
 ## 安装
 ```shell
-go get github.com/oceanbase/obshell-sdk-go
+go get github.com/oceanbase/obshell-sdk-go@master
 ```
 
 ## 快速使用

@@ -17,7 +17,7 @@ English | [Chinese](README_CN.md)
 
 ## Install
 ```shell
-go get github.com/oceanbase/obshell-sdk-go
+go get github.com/oceanbase/obshell-sdk-go@master
 ```
 
 ## Quick Start
