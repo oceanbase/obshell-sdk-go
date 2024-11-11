@@ -21,14 +21,22 @@ type Logger interface {
 	Info(args ...interface{})
 	Warn(args ...interface{})
 	Error(args ...interface{})
+	Debugf(format string, args ...interface{})
+	Infof(format string, args ...interface{})
+	Warnf(format string, args ...interface{})
+	Errorf(format string, args ...interface{})
 }
 
 type NoOpLogger struct{}
 
-func (l *NoOpLogger) Debug(args ...interface{}) {}
-func (l *NoOpLogger) Info(args ...interface{})  {}
-func (l *NoOpLogger) Warn(args ...interface{})  {}
-func (l *NoOpLogger) Error(args ...interface{}) {}
+func (l *NoOpLogger) Debug(args ...interface{})                 {}
+func (l *NoOpLogger) Info(args ...interface{})                  {}
+func (l *NoOpLogger) Warn(args ...interface{})                  {}
+func (l *NoOpLogger) Error(args ...interface{})                 {}
+func (l *NoOpLogger) Debugf(format string, args ...interface{}) {}
+func (l *NoOpLogger) Infof(format string, args ...interface{})  {}
+func (l *NoOpLogger) Warnf(format string, args ...interface{})  {}
+func (l *NoOpLogger) Errorf(format string, args ...interface{}) {}
 
 var log Logger = &NoOpLogger{}
 
