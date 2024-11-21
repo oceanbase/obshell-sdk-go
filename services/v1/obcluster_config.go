@@ -19,11 +19,11 @@ package v1
 import (
 	"fmt"
 
+	"github.com/oceanbase/obshell-sdk-go/internal/util"
 	"github.com/oceanbase/obshell-sdk-go/model"
 	"github.com/oceanbase/obshell-sdk-go/sdk/auth"
 	"github.com/oceanbase/obshell-sdk-go/sdk/request"
 	"github.com/oceanbase/obshell-sdk-go/sdk/response"
-	"github.com/oceanbase/obshell-sdk-go/util"
 )
 
 type ConfigObclusterRequest struct {

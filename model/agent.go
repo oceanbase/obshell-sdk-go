@@ -16,7 +16,22 @@
 
 package model
 
-import "fmt"
+import (
+	"fmt"
+)
+
+type AgentIdentity string
+
+const (
+	MASTER             AgentIdentity = "MASTER"
+	FOLLOWER           AgentIdentity = "FOLLOWER"
+	SINGLE             AgentIdentity = "SINGLE"
+	CLUSTER_AGENT      AgentIdentity = "CLUSTER AGENT"
+	TAKE_OVER_MASTER   AgentIdentity = "TAKE OVER MASTER"
+	TAKE_OVER_FOLLOWER AgentIdentity = "TAKE OVER FOLLOWER"
+	SCALING_OUT        AgentIdentity = "SCALING OUT"
+	UNIDENTIFIED       AgentIdentity = "UNIDENTIFIED"
+)
 
 type AgentInfo struct {
 	Ip   string `json:"ip" form:"ip" binding:"required"`
@@ -43,9 +58,9 @@ type AgentRunStatus struct {
 
 type AgentInstance struct {
 	AgentInfo
-	Zone     string `json:"zone" binding:"required"`
-	Identity string `json:"identity" binding:"required"`
-	Version  string `json:"version"`
+	Zone     string        `json:"zone" binding:"required"`
+	Identity AgentIdentity `json:"identity" binding:"required"`
+	Version  string        `json:"version"`
 }
 
 type AgentStatus struct {
@@ -65,7 +80,7 @@ type AgentStatus struct {
 
 type AgentInfoWithIdentity struct {
 	AgentInfo
-	Identity string `json:"identity" binding:"required"`
+	Identity AgentIdentity `json:"identity" binding:"required"`
 }
 
 type ClusterConfig struct {

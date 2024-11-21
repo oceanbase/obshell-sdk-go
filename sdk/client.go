@@ -23,11 +23,11 @@ import (
 	"github.com/go-resty/resty/v2"
 	"github.com/pkg/errors"
 
+	"github.com/oceanbase/obshell-sdk-go/internal/util"
 	"github.com/oceanbase/obshell-sdk-go/sdk/auth"
 	"github.com/oceanbase/obshell-sdk-go/sdk/option"
 	"github.com/oceanbase/obshell-sdk-go/sdk/request"
 	responselib "github.com/oceanbase/obshell-sdk-go/sdk/response"
-	"github.com/oceanbase/obshell-sdk-go/util"
 )
 
 // Client is not thread-safe

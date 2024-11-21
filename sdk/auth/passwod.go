@@ -17,9 +17,10 @@
 package auth
 
 import (
+	"github.com/oceanbase/obshell-sdk-go/internal/util"
 	"github.com/oceanbase/obshell-sdk-go/log"
+	"github.com/oceanbase/obshell-sdk-go/model"
 	"github.com/oceanbase/obshell-sdk-go/sdk/request"
-	"github.com/oceanbase/obshell-sdk-go/util"
 )
 
 // PasswordAuth is a struct that implements Auther interface.
@@ -71,7 +72,7 @@ func (auth *PasswordAuthMethod) checkIdentity(req request.Request) error {
 		if err != nil {
 			return err
 		}
-		if identity == util.SINGLE {
+		if identity == model.SINGLE {
 			auth.pwd = ""
 			log.Warn("Identity is single, password is not needed.")
 		}

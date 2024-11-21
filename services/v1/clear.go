@@ -22,17 +22,6 @@ import (
 	"github.com/oceanbase/obshell-sdk-go/model"
 )
 
-const (
-	MASTER             string = "MASTER"
-	FOLLOWER           string = "FOLLOWER"
-	SINGLE             string = "SINGLE"
-	CLUSTER_AGENT      string = "CLUSTER AGENT"
-	TAKE_OVER_MASTER   string = "TAKE OVER MASTER"
-	TAKE_OVER_FOLLOWER string = "TAKE OVER FOLLOWER"
-	SCALING_OUT        string = "SCALING OUT"
-	UNIDENTIFIED       string = "UNIDENTIFIED"
-)
-
 // Aggregation Functions
 // Clear clears the agent status to SINGLE before the the cluster init successfully.
 func (c *Client) Clear() (err error) {
@@ -47,7 +36,7 @@ func (c *Client) Clear() (err error) {
 	}
 
 	need_remove := false
-	if agentStatus.Agent.Identity == FOLLOWER || agentStatus.Agent.Identity == MASTER {
+	if agentStatus.Agent.Identity == model.FOLLOWER || agentStatus.Agent.Identity == model.MASTER {
 		need_remove = true
 	}
 

@@ -51,39 +51,26 @@ func GetInfo(server string) (*model.AgentRunStatus, error) {
 	return &response.Data, nil
 }
 
-type AgentIdentity string
-
-const (
-	MASTER             AgentIdentity = "MASTER"
-	FOLLOWER           AgentIdentity = "FOLLOWER"
-	SINGLE             AgentIdentity = "SINGLE"
-	CLUSTER_AGENT      AgentIdentity = "CLUSTER AGENT"
-	TAKE_OVER_MASTER   AgentIdentity = "TAKE OVER MASTER"
-	TAKE_OVER_FOLLOWER AgentIdentity = "TAKE OVER FOLLOWER"
-	SCALING_OUT        AgentIdentity = "SCALING OUT"
-	UNIDENTIFIED       AgentIdentity = "UNIDENTIFIED"
-)
-
-func GetIdentity(server string) (AgentIdentity, error) {
+func GetIdentity(server string) (model.AgentIdentity, error) {
 	resp, err := http.Get(fmt.Sprintf("http://%s/api/v1/info", server))
 	if err != nil {
-		return UNIDENTIFIED, err
+		return model.UNIDENTIFIED, err
 	}
 	defer resp.Body.Close()
 
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return UNIDENTIFIED, err
+		return model.UNIDENTIFIED, err
 	}
 
 	var response struct {
 		Data struct {
-			Identity AgentIdentity `json:"identity"`
+			Identity model.AgentIdentity `json:"identity"`
 		} `json:"data"`
 	}
 
 	if err = json.Unmarshal(body, &response); err != nil {
-		return UNIDENTIFIED, err
+		return model.UNIDENTIFIED, err
 	}
 	return response.Data.Identity, nil
 }
