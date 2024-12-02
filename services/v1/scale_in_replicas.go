@@ -81,10 +81,14 @@ func (c *Client) ScaleInReplicasWithRequest(request *ScaleInReplicasRequest) (da
 // the DagDetailDTO is the final status of the task.
 // the parameter is a ScaleInReplicasRequest, which can be created by NewScaleInReplicasRequest.
 // You can check or operater the task through the DagDetailDTO.
+// If the replica does not exist, the DagDetailDTO will be nil.
 func (c *Client) ScaleInReplicasSyncWithRequest(request *ScaleInReplicasRequest) (*model.DagDetailDTO, error) {
 	dag, err := c.ScaleInReplicasWithRequest(request)
 	if err != nil {
 		return nil, err
+	}
+	if dag == nil || dag.GenericDTO == nil {
+		return nil, nil
 	}
 	return c.WaitDagSucceed(dag.GenericID)
 }

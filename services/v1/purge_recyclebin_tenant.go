@@ -71,7 +71,7 @@ func (c *Client) PurgeRecyclebinTenantWithRequest(request *PurgeRecyclebinTenant
 // the DagDetailDTO is the final status of the task.
 // the parameter is a PurgeRecyclebinTenantRequest, which can be created by NewPurgeRecyclebinTenantRequest.
 // You can check or operater the task through the DagDetailDTO.
-// If the tenant is not exist in recyclebin, the DagDetailDTO will be nil.
+// If the tenant does not exist in recyclebin, the DagDetailDTO will be nil.
 func (c *Client) PurgeRecyclebinTenantSyncWithRequest(request *PurgeRecyclebinTenantRequest) (dag *model.DagDetailDTO, err error) {
 	if dag, err = c.PurgeRecyclebinTenantWithRequest(request); err != nil {
 		return nil, err

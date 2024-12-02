@@ -77,6 +77,7 @@ func (c *Client) RemoveWithRequest(req *RemoveRequest) (dag *model.DagDetailDTO,
 // the DagDetailDTO is the final status of the task.
 // the parameter is a RemoveRequest, which can be created by NewRemoveRequest.
 // You can check or operater the task through the DagDetailDTO.
+// If the agent does not exist, the DagDetailDTO will be nil.
 func (c *Client) RemoveSyncWithRequest(req *RemoveRequest) (dag *model.DagDetailDTO, err error) {
 	if dag, err = c.RemoveWithRequest(req); err != nil {
 		return nil, err
