@@ -268,11 +268,11 @@ func (r *ClusterBackupStatusPatchRequest) SetStatus(status string) *ClusterBacku
 
 func (c *Client) PatchClusterBackupStatus() error {
 	req := c.NewClusterBackupStatusPatchRequest()
-	return c.ClusterBackupStatuSyncWithPatchRequest(req)
+	return c.ClusterBackupStatusWithPatchRequest(req)
 }
 
-// ClusterBackupStatuSyncWithPatchRequest synchronously executes the PATCH request to update backup status.
-func (c *Client) ClusterBackupStatuSyncWithPatchRequest(req *ClusterBackupStatusPatchRequest) error {
+// ClusterBackupStatusWithPatchRequest synchronously executes the PATCH request to update backup status.
+func (c *Client) ClusterBackupStatusWithPatchRequest(req *ClusterBackupStatusPatchRequest) error {
 	response := c.createClusterBackupStatusResponse()
 	return c.Execute(req, response)
 }
@@ -316,11 +316,11 @@ func (r *ClusterLogStatusPatchRequest) SetStatus(status string) *ClusterLogStatu
 
 func (c *Client) PatchClusterLogStatus() error {
 	req := c.NewClusterLogStatusPatchRequest()
-	return c.ClusterLogStatusSyncWithPatchRequest(req)
+	return c.ClusterLogStatusWithPatchRequest(req)
 }
 
 // NewClusterLogStatusPatchRequest creates a new PATCH request to update log status.
-func (c *Client) ClusterLogStatusSyncWithPatchRequest(req *ClusterLogStatusPatchRequest) error {
+func (c *Client) ClusterLogStatusWithPatchRequest(req *ClusterLogStatusPatchRequest) error {
 	response := c.createClusterLogStatusResponse()
 	return c.Execute(req, response)
 }
