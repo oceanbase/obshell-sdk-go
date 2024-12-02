@@ -38,9 +38,6 @@ type Client struct {
 
 	auth          auth.Auther
 	candidateAuth auth.Auther
-
-	TaskQueue chan func() error // Task queue
-	IsSyncing bool              // Is syncing
 }
 
 // NewClient creates a new client with the given host and port.
@@ -67,7 +64,6 @@ func NewClient(host string, port int, options ...option.Optioner) (c *Client, er
 func NewClientWithServer(host string, port int) (*Client, error) {
 	c := &Client{
 		httpClient: resty.New(),
-		TaskQueue:  make(chan func() error, 10),
 		auth:       auth.NewPasswordAuth(""),
 		host:       host,
 		port:       port,
