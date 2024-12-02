@@ -28,9 +28,10 @@ import (
 )
 
 type rpmPackage struct {
-	cpioReader *cpio.Reader
-	filePath   string
-	rpmFile    *os.File
+	cpioReader   *cpio.Reader
+	filePath     string
+	rpmFile      *os.File
+	architecture string
 }
 
 func newRpmPackage(filePath string) *rpmPackage {
@@ -59,6 +60,7 @@ func (rp *rpmPackage) open() (err error) {
 	if err = checkCompressAndFormat(rpmData); err != nil {
 		return err
 	}
+	rp.architecture = rpmData.Architecture()
 
 	xzReader, err := xz.NewReader(rp.rpmFile)
 	if err != nil {

@@ -31,7 +31,7 @@ import (
 	"sync"
 	"time"
 
-	scp "github.com/bramvdbogaerde/go-scp"
+	"github.com/bramvdbogaerde/go-scp"
 	"github.com/cavaliergopher/cpio"
 	"github.com/pkg/errors"
 	"github.com/pkg/sftp"
