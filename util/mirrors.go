@@ -276,7 +276,7 @@ func (m Mirror) getRepoPrimary() (*primaryData, error) {
 
 func (m Mirror) downloadPackage(packageInfo packageInfo, destDir string) (string, error) {
 	if !filepath.IsAbs(destDir) {
-		return "", fmt.Errorf("destination directory  is not an absolute path: %v", destDir)
+		return "", fmt.Errorf("destination is not an absolute path: %v", destDir)
 	}
 	stat, err := os.Stat(destDir)
 	if os.IsNotExist(err) {
@@ -284,7 +284,7 @@ func (m Mirror) downloadPackage(packageInfo packageInfo, destDir string) (string
 			return "", err
 		}
 	} else if !stat.IsDir() {
-		return "", fmt.Errorf("destination directory is not a directory: %v", destDir)
+		return "", fmt.Errorf("destination is not a directory: %v", destDir)
 	} else if err != nil {
 		return "", err
 	}
@@ -326,7 +326,7 @@ func (m Mirror) Search(entry PackageEntry) ([]packageInfo, error) {
 	if err != nil {
 		return nil, err
 	} else if len(match) == 0 {
-		return nil, fmt.Errorf("no such package in %s: %s-%s-%s", m.url, entry.Name, entry.Version, entry.Release)
+		return nil, fmt.Errorf("no such package: %s-%s-%s", entry.Name, entry.Version, entry.Release)
 	}
 	return match, nil
 }
