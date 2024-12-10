@@ -24,6 +24,11 @@ import (
 
 type InitRequest struct {
 	*request.BaseRequest
+	*InitParam
+}
+
+type InitParam struct {
+	ImportScript bool `json:"import_script"`
 }
 
 type InitResponse struct {
@@ -40,9 +45,17 @@ func (c *Client) createInitResponse() *InitResponse {
 func (c *Client) NewInitRequest() *InitRequest {
 	req := &InitRequest{
 		BaseRequest: request.NewAsyncBaseRequest(),
+		InitParam:   &InitParam{},
 	}
 	req.InitApiInfo("/api/v1/ob/init", c.GetHost(), c.GetPort(), "POST")
 	req.SetAuthentication()
+	return req
+}
+
+// SetImportScript sets whether need to import the observer's scripts.
+func (req *InitRequest) SetImportScript(importScript bool) *InitRequest {
+	req.InitParam.ImportScript = importScript
+	req.SetBody(req.InitParam)
 	return req
 }
 

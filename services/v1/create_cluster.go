@@ -27,11 +27,12 @@ import (
 )
 
 type CreateClusterRequest struct {
-	targetHost string
-	targetPort int
-	password   string
-	server     map[string]string // server -> zone
-	requests   []request.Request // only support ConfigClusterRequest and ConfigObserverRequest
+	targetHost   string
+	targetPort   int
+	password     string
+	server       map[string]string // server -> zone
+	requests     []request.Request // only support ConfigClusterRequest and ConfigObserverRequest
+	importScript bool
 }
 
 // AddServer add a server to the cluster later.
@@ -87,6 +88,12 @@ func (req *CreateClusterRequest) ConfigCluster(clusterName string, clusterId int
 // SetPassword set the password of the cluster.
 func (req *CreateClusterRequest) SetPassword(pwd string) *CreateClusterRequest {
 	req.password = pwd
+	return req
+}
+
+// SetImportScript sets whether need to import the observer's scripts.
+func (req *CreateClusterRequest) SetImportScript(importScript bool) *CreateClusterRequest {
+	req.importScript = importScript
 	return req
 }
 
@@ -156,7 +163,7 @@ func (c *Client) CreateClusterWithRequest(req *CreateClusterRequest) (err error)
 		}
 	}
 	// init
-	InitRequest := c.NewInitRequest()
+	InitRequest := c.NewInitRequest().SetImportScript(req.importScript)
 	if _, err := c.InitSyncWithRequest(InitRequest); err != nil {
 		return err
 	}

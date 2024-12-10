@@ -23,6 +23,7 @@ import (
 	"fmt"
 	"io/fs"
 	"net/url"
+	"os"
 	"path/filepath"
 	"regexp"
 	"runtime"
@@ -274,6 +275,20 @@ func (m Mirror) getRepoPrimary() (*primaryData, error) {
 }
 
 func (m Mirror) downloadPackage(packageInfo packageInfo, destDir string) (string, error) {
+	if !filepath.IsAbs(destDir) {
+		return "", fmt.Errorf("destDir is not an absolute path: %v", destDir)
+	}
+	stat, err := os.Stat(destDir)
+	if os.IsNotExist(err) {
+		if err = os.MkdirAll(destDir, fs.FileMode(0755)); err != nil {
+			return "", err
+		}
+	} else if !stat.IsDir() {
+		return "", fmt.Errorf("destDir is not a directory: %v", destDir)
+	} else if err != nil {
+		return "", err
+	}
+
 	url, err := m.getLocalUrl(packageInfo.Location)
 	if err != nil {
 		return "", err
@@ -293,18 +308,30 @@ func (m Mirror) downloadPackage(packageInfo packageInfo, destDir string) (string
 	return dest, nil
 }
 
+// Download searches for the specified package entry in the mirror and downloads the first match to the destination directory.
+// If no matching package is found, or an error occurs during the search, it returns an error.
 func (m Mirror) Download(destDir string, entry PackageEntry) (string, error) {
 	packages, err := m.Search(entry)
 	if err != nil {
 		return "", err
-	} else if len(packages) == 0 {
-		return "", fmt.Errorf("no such package: %v", entry)
 	}
-
+	// If err is nil, then packages must not be nil
 	return m.downloadPackage(packages[0], destDir)
 }
 
+// Search looks for packages that match the provided package entry within the mirror.
+// If no matching packages are found or an error occurs during the search, it returns an error.
 func (m Mirror) Search(entry PackageEntry) ([]packageInfo, error) {
+	match, err := m.search(entry)
+	if err != nil {
+		return nil, err
+	} else if len(match) == 0 {
+		return nil, fmt.Errorf("no such package: %v", entry)
+	}
+	return match, nil
+}
+
+func (m Mirror) search(entry PackageEntry) ([]packageInfo, error) {
 	if entry.Name == "" {
 		return nil, fmt.Errorf("package name is empty")
 	}
@@ -350,9 +377,12 @@ func sortPackages(packages []packageInfo) {
 	})
 }
 
+// DownloadPackage searches for the specified package entry across all mirrors defined in OB_MIRRORS
+// and downloads the first match to the destination directory.
+// If no matching package is found in any mirror, or an error occurs, it returns an error.
 func DownloadPackage(destDir string, entry PackageEntry) (string, error) {
 	for _, mirror := range OB_MIRRORS {
-		packages, err := mirror.Search(entry)
+		packages, err := mirror.search(entry)
 		if err != nil {
 			return "", err
 		}
@@ -364,9 +394,11 @@ func DownloadPackage(destDir string, entry PackageEntry) (string, error) {
 	return "", fmt.Errorf("no such package: %v", entry)
 }
 
+// SearchPackage searches for packages that match the provided package entry across all mirrors defined in OB_MIRRORS.
+// If no matching packages are found, or an error occurs during the search, it returns an error.
 func SearchPackage(entry PackageEntry) ([]packageInfo, error) {
 	for _, mirror := range OB_MIRRORS {
-		packages, err := mirror.Search(entry)
+		packages, err := mirror.search(entry)
 		if err != nil {
 			return nil, err
 		}
