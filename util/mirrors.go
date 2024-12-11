@@ -42,8 +42,10 @@ const (
 )
 
 type Mirror struct {
-	name string
-	url  string
+	name   string
+	url    string
+	arch   string
+	nonLse bool
 }
 
 type baseMirror struct {
@@ -58,15 +60,19 @@ func NewBaseMirror(name, baseUrl string) *baseMirror {
 	}
 }
 
-func (bm *baseMirror) GetMirror(arch, release string) Mirror {
+func (bm *baseMirror) GetMirror(arch, release string, nonLse ...bool) Mirror {
 	url := strings.Replace(bm.baseUrl, "$releasever", release, -1)
 	url = strings.Replace(url, "$basearch", arch, -1)
 
 	name := strings.Replace(bm.name, "$releasever", release, -1)
 	name = strings.Replace(name, "$basearch", arch, -1)
+
+	nonLse = append(nonLse, !supoortLse)
 	return Mirror{
-		name: name,
-		url:  url,
+		name:   name,
+		url:    url,
+		arch:   arch,
+		nonLse: nonLse[0],
 	}
 }
 
@@ -157,14 +163,16 @@ type packageIncludeFile struct {
 const (
 	X86_64  = "x86_64"
 	AARCH64 = "aarch64"
+	NONLSE  = "nonlse"
 
 	EL7 = "7"
 	EL8 = "8"
 )
 
 var (
-	arch    string
-	release string
+	arch       string
+	release    string
+	supoortLse bool
 
 	architectureMap = map[string]string{
 		"amd64": X86_64,
@@ -186,6 +194,12 @@ func init() {
 		arch = runtime.GOARCH
 	} else {
 		arch = architectureMap[runtime.GOARCH]
+	}
+
+	if arch == AARCH64 {
+		supoortLse = executeLocal("bash", "-c", "grep atomics /proc/cpuinfo").Code == 0
+	} else {
+		supoortLse = true
 	}
 
 	var version string
@@ -359,11 +373,11 @@ func (m Mirror) search(entry PackageEntry) ([]packageInfo, error) {
 			match = append(match, pkg)
 		}
 	}
-	sortPackages(match)
+	m.sortPackages(match)
 	return match, nil
 }
 
-func sortPackages(packages []packageInfo) {
+func (m Mirror) sortPackages(packages []packageInfo) {
 	sort.Slice(packages, func(i, j int) bool {
 		val := util.CmpVersionString(packages[i].Version.Epoch, packages[j].Version.Epoch)
 		if val != 0 {
@@ -373,7 +387,16 @@ func sortPackages(packages []packageInfo) {
 		if val != 0 {
 			return val > 0
 		}
-		return util.CmpVersionString(packages[i].Version.Release, packages[j].Version.Release) > 0
+		val = util.CmpVersionString(strings.Split(packages[i].Version.Release, ".")[0], strings.Split(packages[j].Version.Release, ".")[0])
+		if val != 0 {
+			return val > 0
+		}
+		if m.nonLse {
+			return strings.Index(packages[i].Version.Release, NONLSE) > strings.Index(packages[j].Version.Release, NONLSE)
+		} else if m.arch == AARCH64 {
+			return strings.Index(packages[i].Version.Release, NONLSE) < strings.Index(packages[j].Version.Release, NONLSE)
+		}
+		return true
 	})
 }
 
@@ -391,7 +414,7 @@ func DownloadPackage(destDir string, entry PackageEntry) (string, error) {
 			return mirror.downloadPackage(packages[0], destDir)
 		}
 	}
-	return "", fmt.Errorf("no such package: %v", entry)
+	return "", fmt.Errorf("no such package: %s-%s-%s", entry.Name, entry.Version, entry.Release)
 }
 
 // SearchPackage searches for packages that match the provided package entry across all mirrors defined in OB_MIRRORS.
@@ -407,5 +430,5 @@ func SearchPackage(entry PackageEntry) ([]packageInfo, error) {
 			return packages, nil
 		}
 	}
-	return nil, fmt.Errorf("no such package: %v", entry)
+	return nil, fmt.Errorf("no such package: %s-%s-%s", entry.Name, entry.Version, entry.Release)
 }
