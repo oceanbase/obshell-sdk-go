@@ -72,6 +72,11 @@ func (req *CreateClusterRequest) ConfigCluster(clusterName string, clusterId int
 	if req.requests == nil {
 		return nil
 	}
+
+	if len(password) > 0 {
+		req.SetPassword(password[0])
+	}
+
 	configObclusterRequest := &ConfigObclusterRequest{
 		BaseRequest: request.NewAsyncBaseRequest(),
 		body: map[string]interface{}{
