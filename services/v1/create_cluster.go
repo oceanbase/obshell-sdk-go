@@ -35,7 +35,7 @@ type CreateClusterRequest struct {
 	importScript bool
 }
 
-// AddServer add a server to the cluster later.
+// AddServer adds a server to the cluster later.
 func (req *CreateClusterRequest) AddServer(host string, port int, zone string) *CreateClusterRequest {
 	if req.server == nil {
 		return nil
@@ -90,7 +90,8 @@ func (req *CreateClusterRequest) ConfigCluster(clusterName string, clusterId int
 	return req
 }
 
-// SetPassword set the password of the cluster.
+// SetPassword sets the password of the cluster,
+// Note: it will overwrite the password set in ConfigCluster.
 func (req *CreateClusterRequest) SetPassword(pwd string) *CreateClusterRequest {
 	req.password = pwd
 	return req
@@ -102,7 +103,7 @@ func (req *CreateClusterRequest) SetImportScript(importScript bool) *CreateClust
 	return req
 }
 
-// CreateCreateClusterRequest create a CreateClusterRequest, which can be used to create a cluster.
+// CreateCreateClusterRequest creates a CreateClusterRequest, which can be used to create a cluster.
 func (c *Client) NewCreateClusterRequest() *CreateClusterRequest {
 	req := &CreateClusterRequest{
 		targetHost: c.GetHost(),
@@ -124,7 +125,7 @@ func (c *Client) join(server, zone string) error {
 	return nil
 }
 
-// CreateClusterWithRequest recieve a CreateClusterRequest, and send mutilple requests to OBShell to create a cluster.
+// CreateClusterWithRequest recieves a CreateClusterRequest, and send mutilple requests to OBShell to create a cluster.
 // CreateClusterWithRequest is a synchronous method, it will return an error if any task is failed.
 func (c *Client) CreateClusterWithRequest(req *CreateClusterRequest) (err error) {
 	if len(req.server) == 0 {
