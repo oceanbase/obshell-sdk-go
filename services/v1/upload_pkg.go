@@ -24,6 +24,7 @@ import (
 	"path/filepath"
 	"time"
 
+	"github.com/oceanbase/obshell-sdk-go/sdk/auth"
 	"github.com/oceanbase/obshell-sdk-go/sdk/request"
 	"github.com/oceanbase/obshell-sdk-go/sdk/response"
 )
@@ -110,6 +111,11 @@ func (c *Client) createUploadPkgResponse() *GetUploadPkgResponse {
 // params: the parameters to be restored.
 func (c *Client) UploadPkg(pkg string) (UploadPkgResp *UpgradePkgInfo, err error) {
 	req := c.NewUploadPkgRequest(pkg)
+	if passwordAuth, ok := c.GetAuth().(*auth.PasswordAuth); ok {
+		letftime := passwordAuth.GetLifetime()
+		defer passwordAuth.SetLifetime(letftime)
+		passwordAuth.SetLifetime(600 * time.Second)
+	}
 	return c.UploadPkgWithRequest(req)
 }
 
