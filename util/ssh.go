@@ -22,11 +22,15 @@ import (
 	"fmt"
 	"io"
 	"io/fs"
+	"math"
 	"net"
 	"os"
 	"os/exec"
 	"path/filepath"
+	"reflect"
+	"regexp"
 	"runtime"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -842,6 +846,262 @@ func StartObshell(configs ...NodeConfig) error {
 	}
 
 	return nil
+}
+
+type checkItem struct {
+	message string
+	suggest string
+}
+
+func CheckNodes(configs ...NodeConfig) (errors, warns []checkItem){
+	var clientMap map[NodeConfig]*NodeClient
+	defer func() {
+		for _, client := range clientMap {
+			client.Close()
+		}
+	}()
+	clientMap, err := createClientMap(configs...)
+	if err != nil {
+		errors = append(errors, checkItem{err.Error(), ""})
+		return errors, warns
+	}
+	serverNum := len(clientMap)
+	for _, client := range clientMap {
+		if checkNodesFirewalld(client) != nil {
+			errors = append(errors, checkItem{"the firewalld service is up.", "please stop the firewalld service."})
+			return errors, warns
+		}
+		if checkNodesSelinux(client) != nil {
+			errors = append(errors, checkItem{"the selinux is not Disabled.", "please disabled the selinux."})
+			return errors, warns
+		}
+		if  checkNodesClock(client) != nil {
+			errors = append(errors, checkItem{"clock not sync.", "please sync clock."})
+			return errors, warns
+		}
+		if message, err := checkNodesKernelParams(client); err != nil {
+			for _, str := range message {
+				errors = append(errors, checkItem{str, ""})
+			}
+			return errors, warns
+		}
+		if message, err := checkNodesUlimitParams(client,serverNum); err != nil {
+			for _, str := range message {
+				errors = append(errors, checkItem{str, ""})
+			}
+			return errors, warns
+		}
+	}
+
+	return nil, nil
+}
+
+func checkNodesFirewalld(client *NodeClient) error{
+	osType, err := getRemoteLinuxType(client)
+	if err != nil {
+		return err
+	} else if strings.Contains(osType, "ubuntu") || strings.Contains(osType, "debian"){
+		// Assume Ubuntu or Debian uses UFW
+		ret := client.ExecuteCommand("ufw status")
+		if strings.Contains(ret.Stdout, "Status: active"){
+			return fmt.Errorf("the firewalld service is up")
+		}
+	} else if strings.Contains(osType, "fedora") || strings.Contains(osType, "centos") || strings.Contains(osType, "redhat"){
+		// Assume Fedora, CentOS, or RedHat uses firewalld
+		ret := client.ExecuteCommand("systemctl status firewalld")
+		if strings.Contains(ret.Stdout, "Active: active"){
+			return fmt.Errorf("the firewalld service is up")
+		}
+	} else {
+		// For other Linux distributions, default to checking iptables
+		ret := client.ExecuteCommand("iptables -L -n")
+		if strings.Contains(ret.Stdout, "Chain INPUT") && strings.Contains(ret.Stdout, "Chain FORWARD") && strings.Contains(ret.Stdout, "Chain OUTPUT"){
+			return fmt.Errorf("the firewalld service is up")
+		}
+	}
+	return nil
+}
+
+func getRemoteLinuxType(client *NodeClient) (string, error){
+	var ret SshRetun
+	var systemType string
+	if ret = client.ExecuteCommand("cat /etc/os-release"); ret.Code != 0 {
+		err := fmt.Errorf("failed get os type: %s", ret.Stderr)
+		return "", err
+	}
+	for _, line := range strings.Split(ret.Stdout, "\n") {
+		if strings.HasPrefix(line, "ID=") {
+			systemType = strings.ReplaceAll(strings.Split(line, "=")[1], "\"", "")
+			return systemType, nil
+		}
+	}
+	return "", nil
+}
+
+func checkNodesSelinux(client *NodeClient) error{
+	if ret := client.ExecuteCommand("/usr/sbin/getenforce"); ret.Code != 0 {
+		return fmt.Errorf("failed get selinux status: %s", ret.Stderr)
+	} else if strings.Contains(ret.Stdout, "Enforcing"){
+		return fmt.Errorf("the selinux is not Disabled")
+	}
+	return nil
+}
+
+func checkNodesClock(client *NodeClient) error{
+	addrs, err := net.InterfaceAddrs()
+    if err != nil {
+		log.Infof("Get host addr error: %s\n", err.Error())
+        os.Exit(1)
+    }
+	
+    for _, address := range addrs {
+        if ipnet, ok := address.(*net.IPNet); ok && !ipnet.IP.IsLoopback() {
+            if ipnet.IP.To4() != nil {
+				ret := client.ExecuteCommand(fmt.Sprintf("sudo /usr/sbin/clockdiff -o %s", ipnet.IP.String()))
+				clockDiffStr := strings.Fields(ret.Stdout)[1]
+				clockDiffNum, err := strconv.Atoi(clockDiffStr)
+				if err != nil {
+					return err
+				}
+				clockDiffNumAbs := math.Abs(float64(clockDiffNum))
+				if clockDiffNumAbs/1000 > 2 {
+					return fmt.Errorf("the time difference between two servers exceeds 2")
+				}
+			}
+		}
+	}
+	return nil
+}
+
+func checkNodesKernelParams(client *NodeClient) ([]string, error){
+	INF := int(math.Inf(1))
+	var ret SshRetun
+
+	kernelCheckItems := []map[string]any{
+        {"check_item": "vm.max_map_count", "need": []int{327600, 1310720}, "recommend": 655360},
+        {"check_item": "vm.min_free_kbytes", "need": []int{32768, 2097152}, "recommend": 2097152},
+        {"check_item": "vm.overcommit_memory", "need": 0, "recommend": 0},
+        {"check_item": "fs.file-max", "need": []int{6573688, INF}, "recommend": 6573688},
+	}
+	if ret = client.ExecuteCommand("sudo /usr/sbin/sysctl -a"); ret.Code != 0 {
+		err := fmt.Errorf("sysctl command error: %s", ret.Stderr)
+		return nil, err
+	}
+	kernelParams := make(map[string][]string)
+	
+	kernelParamSrc := strings.Split(ret.Stdout, "\n")
+	for _, kernel := range kernelParamSrc{
+		if kernel == "" {
+			continue
+		}
+		kernelList := strings.Split(kernel, "=")
+		pattern := regexp.MustCompile(`[-+]?\d+`)
+		kernelParams[strings.TrimSpace(kernelList[0])] = pattern.FindAllString(kernelList[1], -1)
+	}
+	retSuggests := make([]string, 0)
+	for _, kernelParam := range kernelCheckItems {
+		checkItem := kernelParam["check_item"]
+		var checkItemStr string
+		var ok bool
+		if checkItemStr, ok = checkItem.(string); ok {
+			if _, ok := kernelParams[checkItemStr]; !ok {
+				continue
+			}
+		} else {
+			return nil, fmt.Errorf("any type conversion to string type failed")
+		}
+		values := kernelParams[checkItemStr]
+		needs := kernelParam["need"]
+		recommends := kernelParam["recommend"]
+		for i := 0; i < len(values); i++ {
+			// This case is not handling the value of 'default'. Additional handling is required for 'default' in the future.
+			itemValue, err := strconv.Atoi(values[i])
+			if err != nil {
+				return nil, fmt.Errorf("string type conversion to int type failed")
+			}
+			var need int
+			var recommend int
+			if isSlice(needs) {
+				needList := needs.([]int)
+				need = needList[i]
+			}
+			if isSlice(recommends) {
+				recommendList := recommends.([]int)
+				recommend = recommendList[i]
+			} else {
+				recommend = recommends.(int)
+			}
+			if itemValue != need && itemValue != recommend{
+				retSuggests = append(retSuggests, fmt.Sprintf("%v -> %v current value: %v, recommend: %v", client.ip, checkItem, itemValue, recommend))
+				return retSuggests, fmt.Errorf("please use the recommended parameter values")
+			}
+		}
+	}
+	return retSuggests,nil
+}
+
+func isSlice(v any) bool {
+	rv := reflect.ValueOf(v)
+	return rv.Kind() == reflect.Slice
+}
+
+func checkNodesUlimitParams(client *NodeClient, serverNum int) ([]string, error){
+	INF := int(math.Inf(1))
+
+	ulimitsMin := map[string]map[string]func(int) string{
+        "open files":
+			{"need":func(x int) string { return strconv.Itoa(20000 * x) }, 
+			"recd": func(x int) string { return strconv.Itoa(655350) },
+			"name": func(x int) string { return "nofile"} },
+		"max user processes":
+			{"need":func(x int) string { return strconv.Itoa(120000) }, 
+			"recd": func(x int) string { return strconv.Itoa(655350) },
+			"name": func(x int) string { return"nproc"}},
+		"core file size":
+			{"need":func(x int) string { return strconv.Itoa(0) }, 
+			"recd": func(x int) string { return strconv.Itoa(INF) },
+			"below_need_error": func(x int) string { return "false"},
+            "below_recd_error_strict": func(x int) string { return "false"},
+			"name": func(x int) string { return "core"}},
+		"stack size":
+			{"need":func(x int) string { return strconv.Itoa(1024) }, 
+			"recd": func(x int) string { return strconv.Itoa(INF) },
+			"below_recd_error_strict": func(x int) string { return "false"},
+			"name": func(x int) string { return "stack"}},
+	}
+
+	ret := client.ExecuteCommand("ulimit -a")
+	retList := strings.Split(ret.Stdout, "\n")
+
+	ulimits :=  make(map[string]string)
+	for _, value := range retList {
+		if len(strings.Split(value, `(`)) > 1 {
+			ulimits[strings.TrimSpace(strings.Split(value, `(`)[0])] = strings.Split(value, ")")[1]
+		}
+	}
+	retSuggests := make([]string, 0)
+	for key := range ulimitsMin{
+		value := ulimits[key]
+		if  strings.TrimSpace(value) == "unlimited"{
+			continue
+		}
+		valueInt, err := strconv.Atoi(strings.TrimSpace(value))
+		if err != nil {
+			fmt.Printf("转换出错: %v\n", err)
+			return retSuggests, err
+		}
+		need := ulimitsMin[key]["need"](serverNum)
+		needInt, err := strconv.Atoi(need)
+		if err != nil {
+			fmt.Printf("转换出错: %v\n", err)
+			return retSuggests, err
+		}
+		if valueInt < needInt {
+			retSuggests = append(retSuggests, fmt.Sprintf("%v -> %v{%v} current value: %v, recommend: %v", client.ip, key, ulimitsMin[key]["name"](serverNum), valueInt, needInt))
+			return retSuggests, fmt.Errorf("please use the recommended parameter values")
+		}
+	}
+	return retSuggests, nil
 }
 
 func checkRemoteDirEmpty(sshClient *ssh.Client, filePath string) (bool, error) {
