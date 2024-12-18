@@ -16,7 +16,11 @@
 
 package auth
 
-import "github.com/oceanbase/obshell-sdk-go/sdk/option"
+import (
+	"time"
+
+	"github.com/oceanbase/obshell-sdk-go/sdk/option"
+)
 
 type AuthOption struct {
 	*option.BaseOption
@@ -28,6 +32,27 @@ func newAuthOption(value Auther) AuthOption {
 	}
 }
 
-func WithPasswordAuth(pwd string) AuthOption {
-	return newAuthOption(NewPasswordAuth(pwd))
+type PasswordAuthOption struct {
+	AuthOption
+	password *PasswordAuth
+}
+
+func (auth *PasswordAuthOption) SetLifetime(lifetime time.Duration) *PasswordAuthOption {
+	auth.password.SetLifetime(lifetime)
+	return auth
+}
+
+func (auth *PasswordAuthOption) GetLifetime() time.Duration {
+	return auth.password.GetLifetime()
+}
+
+func newPasswordAuthOption(value *PasswordAuth) *PasswordAuthOption {
+	return &PasswordAuthOption{
+		AuthOption: newAuthOption(value),
+		password:   value,
+	}
+}
+
+func WithPasswordAuth(pwd string) *PasswordAuthOption {
+	return newPasswordAuthOption(NewPasswordAuth(pwd))
 }

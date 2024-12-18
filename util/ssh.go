@@ -1121,12 +1121,19 @@ func checkRemoteDirEmpty(sshClient *ssh.Client, filePath string) (bool, error) {
 	return len(output) == 0, nil
 }
 
+const FLAG_ROOT_PWD = "password"
+
 func startRemoteObshell(sshClient *ssh.Client, workDir, ip string, obshellPort int, password *string) error {
 	log.Infof("Start obshell on %s\n", ip)
 	cmd := fmt.Sprintf("cd %s; ./bin/obshell admin start --ip %s --port %d", workDir, ip, obshellPort)
 	if password != nil {
-		cmd = fmt.Sprintf("export OB_ROOT_PASSWORD=%s; %s", *password, cmd)
+		if ret := executeRemote(sshClient, fmt.Sprintf("%s/bin/obshell admin start -h | grep %s", workDir, FLAG_ROOT_PWD)); ret.Code != 0 {
+			cmd = fmt.Sprintf("export OB_ROOT_PASSWORD='%s'; %s", strings.ReplaceAll(*password, "'", "'\"'\"'"), cmd)
+		} else {
+			cmd = fmt.Sprintf("%s --%s='%s'", cmd, FLAG_ROOT_PWD, strings.ReplaceAll(*password, "'", "'\"'\"'"))
+		}
 	}
+
 	ret := executeRemote(sshClient, cmd)
 	if ret.Code != 0 {
 		return fmt.Errorf("failed to start obshell: %s", ret.Stderr)

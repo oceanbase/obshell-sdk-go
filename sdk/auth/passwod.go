@@ -17,6 +17,8 @@
 package auth
 
 import (
+	"time"
+
 	"github.com/oceanbase/obshell-sdk-go/internal/util"
 	"github.com/oceanbase/obshell-sdk-go/log"
 	"github.com/oceanbase/obshell-sdk-go/model"
@@ -27,7 +29,8 @@ import (
 // It is used to authenticate with password.
 type PasswordAuth struct {
 	*BaseAuth
-	pwd string
+	pwd      string
+	letftime time.Duration
 }
 
 func NewPasswordAuth(pwd string) *PasswordAuth {
@@ -35,6 +38,18 @@ func NewPasswordAuth(pwd string) *PasswordAuth {
 		BaseAuth: newBaseAuth(AUTH_TYPE_PASSWORD, AUTH_V1, AUTH_V2),
 		pwd:      pwd,
 	}
+}
+
+func (auth *PasswordAuth) SetLifetime(lifetime time.Duration) {
+	auth.letftime = lifetime
+	auth.method = nil
+}
+
+func (auth *PasswordAuth) GetLifetime() time.Duration {
+	if auth.letftime == 0 {
+		return 60 * time.Second
+	}
+	return auth.letftime
 }
 
 func (auth *PasswordAuth) Auth(request request.Request, context *request.Context) error {
@@ -45,9 +60,9 @@ func (auth *PasswordAuth) Auth(request request.Request, context *request.Context
 
 	switch auth.GetVersion() {
 	case AUTH_V1:
-		auth.method = newPasswordAuthV1(auth.pwd)
+		auth.method = newPasswordAuthV1(auth.pwd, auth.GetLifetime())
 	case AUTH_V2:
-		auth.method = newPasswordAuthV2(auth.pwd)
+		auth.method = newPasswordAuthV2(auth.pwd, auth.GetLifetime())
 	default:
 		return ErrNotSupportedAuthVersion
 	}
@@ -59,6 +74,7 @@ type PasswordAuthMethod struct {
 	pwd           string
 	pk            string
 	identityCheck bool
+	letftime      time.Duration
 }
 
 func (auth *PasswordAuthMethod) Reset() {
@@ -80,8 +96,9 @@ func (auth *PasswordAuthMethod) checkIdentity(req request.Request) error {
 	}
 	return nil
 }
-func newPasswordAuthMethod(pwd string) *PasswordAuthMethod {
+func newPasswordAuthMethod(pwd string, letftime time.Duration) *PasswordAuthMethod {
 	return &PasswordAuthMethod{
-		pwd: pwd,
+		pwd:      pwd,
+		letftime: letftime,
 	}
 }

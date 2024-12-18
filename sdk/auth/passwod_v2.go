@@ -38,9 +38,9 @@ type PasswordAuthV2 struct {
 	*PasswordAuthMethod
 }
 
-func newPasswordAuthV2(pwd string) *PasswordAuthV2 {
+func newPasswordAuthV2(pwd string, letftime time.Duration) *PasswordAuthV2 {
 	return &PasswordAuthV2{
-		newPasswordAuthMethod(pwd),
+		PasswordAuthMethod: newPasswordAuthMethod(pwd, letftime),
 	}
 }
 
@@ -106,7 +106,7 @@ func (auth *PasswordAuthV2) BuildHeader(pwd, uri string, keys ...[]byte) (map[st
 	}
 	header := HttpHeader{
 		Auth: pwd,
-		Ts:   fmt.Sprintf("%d", time.Now().Add(100*time.Second).Unix()),
+		Ts:   fmt.Sprintf("%d", time.Now().Add(auth.letftime).Unix()),
 		Uri:  uri,
 		Keys: aesKeys,
 	}

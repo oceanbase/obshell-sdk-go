@@ -18,6 +18,6 @@ package sdk
 
 import "github.com/oceanbase/obshell-sdk-go/sdk/auth"
 
-func WithPasswordAuth(pwd string) auth.AuthOption {
+func WithPasswordAuth(pwd string) *auth.PasswordAuthOption {
 	return auth.WithPasswordAuth(pwd)
 }

@@ -29,6 +29,7 @@ type CreateTenantParam struct {
 	Whilelist    string                 `json:"whitelist"`
 	RootPassword string                 `json:"root_password"` // Root password.
 	Scenario     string                 `json:"scenario"`      // Can be one of 'express_oltp', 'complex_oltp', 'olap', 'htap'(default), 'kv'.
+	ImportScript bool                   `json:"import_script"` // Whether need to import the observer's scripts.
 	Charset      string                 `json:"charset"`
 	Collation    string                 `json:"collation"`
 	ReadOnly     bool                   `json:"read_only"`                    // Default to false.
@@ -112,6 +113,13 @@ func (req *CreateTenantRequest) SetParameters(parameters map[string]interface{})
 
 func (req *CreateTenantRequest) SetScenario(scenario string) *CreateTenantRequest {
 	req.param.Scenario = scenario
+	req.SetBody(&req.param)
+	return req
+}
+
+// SetImportScript sets whether need to import the observer's scripts.
+func (req *CreateTenantRequest) SetImportScript(importScript bool) *CreateTenantRequest {
+	req.param.ImportScript = importScript
 	req.SetBody(&req.param)
 	return req
 }

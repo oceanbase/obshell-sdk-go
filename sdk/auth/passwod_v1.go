@@ -28,9 +28,9 @@ type PasswordAuthV1 struct {
 	*PasswordAuthMethod
 }
 
-func newPasswordAuthV1(pwd string) *PasswordAuthV1 {
+func newPasswordAuthV1(pwd string, letftime time.Duration) *PasswordAuthV1 {
 	return &PasswordAuthV1{
-		PasswordAuthMethod: newPasswordAuthMethod(pwd),
+		PasswordAuthMethod: newPasswordAuthMethod(pwd, letftime),
 	}
 }
 
@@ -53,7 +53,7 @@ func (auth *PasswordAuthV1) Auth(req request.Request, context *request.Context) 
 
 	authMap := map[string]interface{}{
 		"password": auth.pwd,
-		"ts":       time.Now().Unix() + 20,
+		"ts":       time.Now().Unix() + int64(auth.letftime),
 	}
 	authJSON, err := json.Marshal(authMap)
 	if err != nil {
