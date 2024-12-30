@@ -863,58 +863,63 @@ func CheckNodes(configs ...NodeConfig) (errors, warns []checkItem){
 	clientMap, err := createClientMap(configs...)
 	if err != nil {
 		errors = append(errors, checkItem{err.Error(), ""})
-		return errors, warns
 	}
 	serverNum := len(clientMap)
 	for _, client := range clientMap {
-		if checkNodesFirewalld(client) != nil {
-			errors = append(errors, checkItem{"the firewalld service is up.", "please stop the firewalld service."})
-			return errors, warns
+		if err := checkNodesFirewalld(client); err != nil {
+			errors = append(errors, checkItem{fmt.Sprintf("host: %v, the firewalld service is up.", client.ip), "please stop the firewalld service."})
 		}
 		if checkNodesSelinux(client) != nil {
-			errors = append(errors, checkItem{"the selinux is not Disabled.", "please disabled the selinux."})
-			return errors, warns
+			errors = append(errors, checkItem{fmt.Sprintf("host: %v, the selinux is not Disabled.", client.ip), "please disabled the selinux."})
 		}
-		if  checkNodesClock(client) != nil {
-			errors = append(errors, checkItem{"clock not sync.", "please sync clock."})
-			return errors, warns
+		if  checkItemErr, checkItemWarn := checkNodesClock(client); (checkItemErr != checkItem{}) || (checkItemWarn != checkItem{}){
+			errors = append(errors, checkItemErr)
+			warns = append(warns, checkItemWarn)
 		}
 		if message, err := checkNodesKernelParams(client); err != nil {
 			for _, str := range message {
 				errors = append(errors, checkItem{str, ""})
 			}
-			return errors, warns
 		}
 		if message, err := checkNodesUlimitParams(client,serverNum); err != nil {
 			for _, str := range message {
 				errors = append(errors, checkItem{str, ""})
 			}
-			return errors, warns
 		}
 	}
 
-	return nil, nil
+	return errors, warns
 }
 
 func checkNodesFirewalld(client *NodeClient) error{
+	var ret SshRetun
 	osType, err := getRemoteLinuxType(client)
 	if err != nil {
 		return err
 	} else if strings.Contains(osType, "ubuntu") || strings.Contains(osType, "debian"){
 		// Assume Ubuntu or Debian uses UFW
-		ret := client.ExecuteCommand("ufw status")
+		if ret = client.ExecuteCommand("ufw status"); ret.Stderr != "" {
+			err := fmt.Errorf("command execute error: %s", ret.Stderr)
+			return err
+		}
 		if strings.Contains(ret.Stdout, "Status: active"){
 			return fmt.Errorf("the firewalld service is up")
 		}
 	} else if strings.Contains(osType, "fedora") || strings.Contains(osType, "centos") || strings.Contains(osType, "redhat"){
 		// Assume Fedora, CentOS, or RedHat uses firewalld
-		ret := client.ExecuteCommand("systemctl status firewalld")
+		if ret = client.ExecuteCommand("systemctl status firewalld"); ret.Stderr != "" {
+			err := fmt.Errorf("command execute error: %s", ret.Stderr)
+			return err
+		}
 		if strings.Contains(ret.Stdout, "Active: active"){
 			return fmt.Errorf("the firewalld service is up")
 		}
 	} else {
 		// For other Linux distributions, default to checking iptables
-		ret := client.ExecuteCommand("iptables -L -n")
+		if ret = client.ExecuteCommand("iptables -L -n"); ret.Stderr != "" {
+			err := fmt.Errorf("command execute error: %s", ret.Stderr)
+			return err
+		}
 		if strings.Contains(ret.Stdout, "Chain INPUT") && strings.Contains(ret.Stdout, "Chain FORWARD") && strings.Contains(ret.Stdout, "Chain OUTPUT"){
 			return fmt.Errorf("the firewalld service is up")
 		}
@@ -925,7 +930,7 @@ func checkNodesFirewalld(client *NodeClient) error{
 func getRemoteLinuxType(client *NodeClient) (string, error){
 	var ret SshRetun
 	var systemType string
-	if ret = client.ExecuteCommand("cat /etc/os-release"); ret.Code != 0 {
+	if ret = client.ExecuteCommand("cat /etc/os-release"); ret.Stderr != "" {
 		err := fmt.Errorf("failed get os type: %s", ret.Stderr)
 		return "", err
 	}
@@ -939,7 +944,7 @@ func getRemoteLinuxType(client *NodeClient) (string, error){
 }
 
 func checkNodesSelinux(client *NodeClient) error{
-	if ret := client.ExecuteCommand("/usr/sbin/getenforce"); ret.Code != 0 {
+	if ret := client.ExecuteCommand("/usr/sbin/getenforce"); ret.Stderr != "" {
 		return fmt.Errorf("failed get selinux status: %s", ret.Stderr)
 	} else if strings.Contains(ret.Stdout, "Enforcing"){
 		return fmt.Errorf("the selinux is not Disabled")
@@ -947,34 +952,45 @@ func checkNodesSelinux(client *NodeClient) error{
 	return nil
 }
 
-func checkNodesClock(client *NodeClient) error{
+func checkNodesClock(client *NodeClient) (checkItemErr, checkItemwarn checkItem){
+	var ret SshRetun
 	addrs, err := net.InterfaceAddrs()
-    if err != nil {
+	if err != nil {
 		log.Infof("Get host addr error: %s\n", err.Error())
-        os.Exit(1)
+		os.Exit(1)
     }
-	
-    for _, address := range addrs {
-        if ipnet, ok := address.(*net.IPNet); ok && !ipnet.IP.IsLoopback() {
-            if ipnet.IP.To4() != nil {
-				ret := client.ExecuteCommand(fmt.Sprintf("sudo /usr/sbin/clockdiff -o %s", ipnet.IP.String()))
+
+	for _, address := range addrs {
+		if ipnet, ok := address.(*net.IPNet); ok && !ipnet.IP.IsLoopback() {
+			if ipnet.IP.To4() != nil {
+				if ret = client.ExecuteCommand(fmt.Sprintf("sudo /usr/sbin/clockdiff -o %s", ipnet.IP.String())); ret.Stderr != "" {
+					err := fmt.Errorf("command execute error: %s", ret.Stderr)
+					return checkItem{err.Error(), ""}, checkItem{"",""}
+				}
+				if len(ret.Stdout) < 2 {
+					err := fmt.Errorf("the command execution result is incorrect")
+					return checkItem{err.Error(), ""}, checkItem{"",""}
+				}
 				clockDiffStr := strings.Fields(ret.Stdout)[1]
 				clockDiffNum, err := strconv.Atoi(clockDiffStr)
 				if err != nil {
-					return err
+					return checkItem{err.Error(), ""}, checkItem{"",""}
 				}
 				clockDiffNumAbs := math.Abs(float64(clockDiffNum))
 				if clockDiffNumAbs/1000 > 2 {
-					return fmt.Errorf("the time difference between two servers exceeds 2")
+					err := fmt.Errorf("the time difference between two servers exceeds 2")
+					return checkItem{err.Error(), ""}, checkItem{"",""}
 				}
+			} else {
+				return checkItem{"", ""}, checkItem{fmt.Sprintf("The obtained address %v is not an IPv4 address", ipnet.IP),""}
 			}
 		}
 	}
-	return nil
+	return
 }
 
 func checkNodesKernelParams(client *NodeClient) ([]string, error){
-	INF := int(math.Inf(1))
+	INF := math.MaxInt
 	var ret SshRetun
 
 	kernelCheckItems := []map[string]any{
@@ -1011,33 +1027,34 @@ func checkNodesKernelParams(client *NodeClient) ([]string, error){
 			return nil, fmt.Errorf("any type conversion to string type failed")
 		}
 		values := kernelParams[checkItemStr]
+
+		value, err := strconv.Atoi(values[0])
+		if err != nil {
+			return nil, fmt.Errorf("string type conversion to int type failed")
+		}
 		needs := kernelParam["need"]
-		recommends := kernelParam["recommend"]
-		for i := 0; i < len(values); i++ {
-			// This case is not handling the value of 'default'. Additional handling is required for 'default' in the future.
-			itemValue, err := strconv.Atoi(values[i])
-			if err != nil {
-				return nil, fmt.Errorf("string type conversion to int type failed")
+		recommend := kernelParam["recommend"]
+		if isSlice(needs) && len(needs.([]int)) == 2 {
+			min := needs.([]int)[0]
+			max := needs.([]int)[1]
+			if value < min || value > max {
+				retSuggests = append(retSuggests, fmt.Sprintf("%v -> %v current value: %v, recommend: %v", client.ip, checkItem, value, recommend))
 			}
-			var need int
-			var recommend int
-			if isSlice(needs) {
-				needList := needs.([]int)
-				need = needList[i]
+		} else {
+			need, ok := needs.(int)
+			if !ok {
+				return nil, fmt.Errorf("unexpected error: need type conversion failed")
 			}
-			if isSlice(recommends) {
-				recommendList := recommends.([]int)
-				recommend = recommendList[i]
-			} else {
-				recommend = recommends.(int)
-			}
-			if itemValue != need && itemValue != recommend{
-				retSuggests = append(retSuggests, fmt.Sprintf("%v -> %v current value: %v, recommend: %v", client.ip, checkItem, itemValue, recommend))
-				return retSuggests, fmt.Errorf("please use the recommended parameter values")
+			if value != need {
+				retSuggests = append(retSuggests, fmt.Sprintf("%v -> %v current value: %v, recommend: %v", client.ip, checkItem, value, recommend))
 			}
 		}
 	}
-	return retSuggests,nil
+	if len(retSuggests) > 0 {
+		return retSuggests, fmt.Errorf("please use the recommended parameter values")
+	} else {
+		return nil, nil
+	}
 }
 
 func isSlice(v any) bool {
@@ -1046,31 +1063,27 @@ func isSlice(v any) bool {
 }
 
 func checkNodesUlimitParams(client *NodeClient, serverNum int) ([]string, error){
-	INF := int(math.Inf(1))
+	var ret SshRetun
 
 	ulimitsMin := map[string]map[string]func(int) string{
         "open files":
-			{"need":func(x int) string { return strconv.Itoa(20000 * x) }, 
-			"recd": func(x int) string { return strconv.Itoa(655350) },
+			{"need":func(x int) string { return strconv.Itoa(20000 * x) },
 			"name": func(x int) string { return "nofile"} },
 		"max user processes":
-			{"need":func(x int) string { return strconv.Itoa(120000) }, 
-			"recd": func(x int) string { return strconv.Itoa(655350) },
+			{"need":func(x int) string { return strconv.Itoa(120000) },
 			"name": func(x int) string { return"nproc"}},
 		"core file size":
-			{"need":func(x int) string { return strconv.Itoa(0) }, 
-			"recd": func(x int) string { return strconv.Itoa(INF) },
-			"below_need_error": func(x int) string { return "false"},
-            "below_recd_error_strict": func(x int) string { return "false"},
+			{"need":func(x int) string { return strconv.Itoa(0) },
 			"name": func(x int) string { return "core"}},
 		"stack size":
-			{"need":func(x int) string { return strconv.Itoa(1024) }, 
-			"recd": func(x int) string { return strconv.Itoa(INF) },
-			"below_recd_error_strict": func(x int) string { return "false"},
+			{"need":func(x int) string { return strconv.Itoa(1024) },
 			"name": func(x int) string { return "stack"}},
 	}
 
-	ret := client.ExecuteCommand("ulimit -a")
+	if ret = client.ExecuteCommand("ulimit -a"); ret.Stderr != "" {
+		err := fmt.Errorf("sysctl command error: %s", ret.Stderr)
+		return nil, err
+	}
 	retList := strings.Split(ret.Stdout, "\n")
 
 	ulimits :=  make(map[string]string)
@@ -1098,10 +1111,13 @@ func checkNodesUlimitParams(client *NodeClient, serverNum int) ([]string, error)
 		}
 		if valueInt < needInt {
 			retSuggests = append(retSuggests, fmt.Sprintf("%v -> %v{%v} current value: %v, recommend: %v", client.ip, key, ulimitsMin[key]["name"](serverNum), valueInt, needInt))
-			return retSuggests, fmt.Errorf("please use the recommended parameter values")
 		}
 	}
-	return retSuggests, nil
+	if len(retSuggests) > 0 {
+		return retSuggests, fmt.Errorf("please use the recommended parameter values")
+	} else {
+		return nil, nil
+	}
 }
 
 func checkRemoteDirEmpty(sshClient *ssh.Client, filePath string) (bool, error) {
