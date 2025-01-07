@@ -115,5 +115,8 @@ func (c *Client) ModifyTenantReplicasSyncWithRequest(request *ModifyTenantReplic
 	if err != nil {
 		return nil, err
 	}
+	if dag == nil || dag.GenericDTO == nil {
+		return nil, nil
+	}
 	return c.WaitDagSucceed(dag.GenericID)
 }
