@@ -752,9 +752,7 @@ func installRpmPackage(rmpPkg string, client NodeClient) ([]string, map[string]s
 	// Create link files
 	for target, source := range linkMap {
 		log.Infof("link to %s", target)
-		config := client.NodeConfig
-		srcPath := getDestPath(config, source)
-		dstPath := getDestPath(config, target)
+		srcPath, dstPath := resolveSymlinkPath(client.NodeConfig, target, source)
 		cmd := fmt.Sprintf("mkdir -p %s; ln -sf %s %s", filepath.Dir(dstPath), srcPath, dstPath)
 
 		if ret := client.ExecuteCommand(cmd); ret.Code != 0 {
@@ -808,9 +806,26 @@ func paralleWriteFiles(client *NodeClient, fileContents []*fileContent) error {
 	return nil
 }
 
+func resolveSymlinkPath(config NodeConfig, linkPath string, linkTarget string) (string, string) {
+	dstPath := getDestPath(config, linkPath)
+
+	var srcPath string
+	if filepath.IsAbs(linkTarget) {
+		srcPath = getDestPath(config, linkTarget)
+	} else {
+		linkDir := filepath.Dir(linkPath)
+		fullTargetPath := filepath.Join(linkDir, linkTarget)
+		cleanTargetPath := filepath.Clean(fullTargetPath)
+		srcPath = getDestPath(config, cleanTargetPath)
+	}
+
+	return srcPath, dstPath
+}
+
 func getDestPath(config NodeConfig, name string) string {
+	name = filepath.Clean(name)
 	// Remove the prefix "./home/admin/oceanbase" if it exists
-	fileName, found := strings.CutPrefix(name, "./home/admin/oceanbase")
+	fileName, found := strings.CutPrefix(name, "home/admin/oceanbase")
 	if !found {
 		// Remove the prefix "./usr" if it exists
 		fileName, _ = strings.CutPrefix(name, "./usr")
