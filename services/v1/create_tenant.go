@@ -39,11 +39,15 @@ type CreateTenantParam struct {
 	ZoneList     []ZoneParam            `json:"zone_list" binding:"required"` // Tenant zone list with unit config.
 }
 
+// ZoneParam is the zone properties of the tenant.
 type ZoneParam struct {
-	Name           string `json:"name" binding:"required"`
-	UnitConfigName string `json:"unit_config_name" binding:"required"`
-	UnitNum        int    `json:"unit_num" binding:"required"`
-	ReplicaType    string `json:"replica_type"` // Replica type, "FULL"(default) or "READONLY"
+	Name string `json:"name"`
+	// UnitConfigName is optional when used by modify tenant replicas.
+	UnitConfigName string `json:"unit_config_name"`
+	// UnitNum is optional when used by modify tenant replicas.
+	UnitNum int `json:"unit_num"`
+	// Replica type can be"FULL"(default) or "READONLY", optional.
+	ReplicaType string `json:"replica_type"`
 }
 
 type CreateTenantRequest struct {
