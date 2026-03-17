@@ -19,6 +19,8 @@ package request
 type Context struct {
 	headers map[string]string
 	body    interface{}
+	aesKey  []byte
+	aesIv   []byte
 }
 
 func NewContext() *Context {
@@ -36,4 +38,17 @@ func (c *Context) SetHeader(key, value string) {
 
 func (c *Context) SetBody(body interface{}) {
 	c.body = body
+}
+
+func (c *Context) SetAESKeyAndIv(key, iv []byte) {
+	c.aesKey = key
+	c.aesIv = iv
+}
+
+func (c *Context) GetAESKey() []byte {
+	return c.aesKey
+}
+
+func (c *Context) GetAESIv() []byte {
+	return c.aesIv
 }

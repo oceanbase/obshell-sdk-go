@@ -66,26 +66,32 @@ func (auth *PasswordAuthV2) Auth(req request.Request, context *request.Context) 
 		return err
 	}
 
-	encryptedBody, header, err := auth.BuildBodyAndHeader(req.GetBody(), auth.pwd, uri)
+	encryptedBody, header, key, iv, err := auth.BuildBodyAndHeaderWithAES(req.GetBody(), auth.pwd, uri)
 	if err != nil {
 		return err
 	}
 	context.SetHeader("X-OCS-Header", header["X-OCS-Header"])
 	context.SetBody(encryptedBody)
+	context.SetAESKeyAndIv(key, iv)
 
 	return nil
 }
 
 func (auth *PasswordAuthV2) BuildBodyAndHeader(param interface{}, pwd string, uri string) (encryptedBody interface{}, header map[string]string, err error) {
-	encryptedBody, Key, Iv, err := EncryptBodyWithAes(param)
+	encryptedBody, header, _, _, err = auth.BuildBodyAndHeaderWithAES(param, pwd, uri)
+	return
+}
+
+func (auth *PasswordAuthV2) BuildBodyAndHeaderWithAES(param interface{}, pwd string, uri string) (encryptedBody interface{}, header map[string]string, key []byte, iv []byte, err error) {
+	encryptedBody, key, iv, err = EncryptBodyWithAes(param)
 	if err != nil {
-		return nil, nil, err
+		return nil, nil, nil, nil, err
 	}
-	header, err = auth.BuildHeader(pwd, uri, Key, Iv)
+	header, err = auth.BuildHeader(pwd, uri, key, iv)
 	if err != nil {
-		return nil, nil, err
+		return nil, nil, nil, nil, err
 	}
-	return encryptedBody, header, nil
+	return encryptedBody, header, key, iv, nil
 }
 
 type HttpHeader struct {
@@ -202,4 +208,43 @@ func pkcs5Padding(ciphertext []byte, blockSize int) []byte {
 	padding := blockSize - len(ciphertext)%blockSize
 	padtext := bytes.Repeat([]byte{byte(padding)}, padding)
 	return append(ciphertext, padtext...)
+}
+
+// AESDecrypt decrypts the encrypted string using AES CBC mode with the given key and iv.
+func AESDecrypt(encrypted string, key []byte, iv []byte) (string, error) {
+	ciphertext, err := base64.StdEncoding.DecodeString(encrypted)
+	if err != nil {
+		return "", errors.Wrap(err, "base64 decode failed")
+	}
+
+	block, err := aes.NewCipher(key)
+	if err != nil {
+		return "", err
+	}
+
+	if len(ciphertext)%block.BlockSize() != 0 {
+		return "", errors.New("ciphertext is not a multiple of the block size")
+	}
+
+	mode := cipher.NewCBCDecrypter(block, iv)
+	plaintext := make([]byte, len(ciphertext))
+	mode.CryptBlocks(plaintext, ciphertext)
+
+	plaintext, err = pkcs5UnPadding(plaintext)
+	if err != nil {
+		return "", err
+	}
+	return string(plaintext), nil
+}
+
+func pkcs5UnPadding(plaintext []byte) ([]byte, error) {
+	length := len(plaintext)
+	if length == 0 {
+		return nil, errors.New("plaintext is empty")
+	}
+	unpadding := int(plaintext[length-1])
+	if unpadding > length {
+		return nil, errors.New("invalid padding")
+	}
+	return plaintext[:length-unpadding], nil
 }

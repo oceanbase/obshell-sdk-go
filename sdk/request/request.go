@@ -37,6 +37,8 @@ type Request interface {
 	Authentication() bool
 	IsAsync() bool
 	BuildHttpRequest(context *Context) *resty.Request
+	SetContext(context *Context)
+	GetContext() *Context
 }
 
 type BaseRequest struct {
@@ -52,6 +54,7 @@ type BaseRequest struct {
 	queryParam     map[string]string
 	files          map[string]string
 	isAsync        bool
+	context        *Context
 }
 
 func NewBaseRequest() *BaseRequest {
@@ -164,4 +167,12 @@ func (r *BaseRequest) BuildHttpRequest(context *Context) *resty.Request {
 	}
 
 	return req
+}
+
+func (r *BaseRequest) SetContext(context *Context) {
+	r.context = context
+}
+
+func (r *BaseRequest) GetContext() *Context {
+	return r.context
 }

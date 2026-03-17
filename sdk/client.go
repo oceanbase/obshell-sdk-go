@@ -262,6 +262,7 @@ func (c *Client) realExecute(req request.Request, response responselib.Response)
 			return err
 		}
 	}
+	req.SetContext(requestContext)
 
 	r := req.BuildHttpRequest(requestContext).
 		SetError(response).
