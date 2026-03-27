@@ -9,7 +9,7 @@ require (
 
 require (
 	github.com/kr/fs v0.1.0 // indirect
-	golang.org/x/sys v0.26.0 // indirect
+	golang.org/x/sys v0.28.0 // indirect
 )
 
 require (
@@ -18,6 +18,6 @@ require (
 	github.com/cavaliergopher/rpm v1.2.0
 	github.com/pkg/sftp v1.13.7
 	github.com/ulikunitz/xz v0.5.12
-	golang.org/x/crypto v0.28.0
+	golang.org/x/crypto v0.31.0
 	golang.org/x/net v0.25.0 // indirect
 )
