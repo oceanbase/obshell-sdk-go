@@ -14,18 +14,19 @@
  * limitations under the License.
  */
 
- package util
+package util
 
 import (
+	"crypto/tls"
 	"encoding/json"
 	"fmt"
 	"io"
-	"net/http"
 )
 
-// getPublicKey function retrieves the public key from the API
-func GetPublicKey(server string) (string, error) {
-	resp, err := http.Get(fmt.Sprintf("http://%s/api/v1/secret", server))
+// GetPublicKeyWithOptions retrieves the public key using the given protocol and TLS settings.
+func GetPublicKeyWithOptions(server, protocol string, tlsConfig *tls.Config) (string, error) {
+	client := newHTTPClient(tlsConfig)
+	resp, err := client.Get(fmt.Sprintf("%s://%s/api/v1/secret", protocol, server))
 	if err != nil {
 		return "", err
 	}

@@ -45,7 +45,7 @@ func (auth *PasswordAuthV1) Auth(req request.Request, context *request.Context) 
 	}
 
 	if auth.pk == "" {
-		auth.pk, err = util.GetPublicKey(req.GetServer())
+		auth.pk, err = util.GetPublicKeyWithOptions(req.GetServer(), req.GetProtocol(), req.GetTLSConfig())
 		if err != nil {
 			return err
 		}

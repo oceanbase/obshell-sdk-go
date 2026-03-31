@@ -17,6 +17,7 @@
 package request
 
 import (
+	"crypto/tls"
 	"fmt"
 	"net/url"
 	"strings"
@@ -31,30 +32,35 @@ type Request interface {
 	SetBody(body interface{})
 	SetQueryParam(key, value string)
 	SetHeader(k, v string)
+	SetProtocol(protocol string)
+	GetProtocol() string
+	SetTLSConfig(cfg *tls.Config)
+	GetTLSConfig() *tls.Config
 	BuildUrl() (string, error)
 	GetUri() (string, error)
 	GetServer() string
 	Authentication() bool
 	IsAsync() bool
-	BuildHttpRequest(context *Context) *resty.Request
+	BuildHttpRequest(context *Context, httpClient *resty.Client) *resty.Request
 	SetContext(context *Context)
 	GetContext() *Context
 }
 
 type BaseRequest struct {
-	host           string
-	port           int
-	uri            string
-	Protocol       string
-	method         string
-	authentication bool
-	Version        string
-	header         map[string]string
-	body           interface{}
-	queryParam     map[string]string
-	files          map[string]string
-	isAsync        bool
-	context        *Context
+	host                  string
+	port                  int
+	uri                   string
+	Protocol              string
+	method                string
+	authentication        bool
+	Version               string
+	header                map[string]string
+	body                  interface{}
+	queryParam            map[string]string
+	files                 map[string]string
+	isAsync               bool
+	context   *Context
+	tlsConfig *tls.Config
 }
 
 func NewBaseRequest() *BaseRequest {
@@ -135,6 +141,22 @@ func (r *BaseRequest) Authentication() bool {
 	return r.authentication
 }
 
+func (r *BaseRequest) SetProtocol(protocol string) {
+	r.Protocol = protocol
+}
+
+func (r *BaseRequest) GetProtocol() string {
+	return r.Protocol
+}
+
+func (r *BaseRequest) SetTLSConfig(cfg *tls.Config) {
+	r.tlsConfig = cfg
+}
+
+func (r *BaseRequest) GetTLSConfig() *tls.Config {
+	return r.tlsConfig
+}
+
 func (r *BaseRequest) InitApiInfo(uri, host string, port int, method string) {
 	r.uri = uri
 	r.host = host
@@ -147,9 +169,9 @@ func (r *BaseRequest) InitApiInfo(uri, host string, port int, method string) {
 	r.method = method
 }
 
-func (r *BaseRequest) BuildHttpRequest(context *Context) *resty.Request {
+func (r *BaseRequest) BuildHttpRequest(context *Context, httpClient *resty.Client) *resty.Request {
 	// The default format of the request is JSON.
-	req := resty.New().R()
+	req := httpClient.R()
 
 	// Set headers which are not in context, set by service.
 	for k, v := range r.header {

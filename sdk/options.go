@@ -16,8 +16,35 @@
 
 package sdk
 
-import "github.com/oceanbase/obshell-sdk-go/sdk/auth"
+import (
+	"crypto/tls"
+	"crypto/x509"
+
+	"github.com/oceanbase/obshell-sdk-go/sdk/auth"
+	"github.com/oceanbase/obshell-sdk-go/sdk/option"
+)
 
 func WithPasswordAuth(pwd string) *auth.PasswordAuthOption {
 	return auth.WithPasswordAuth(pwd)
+}
+
+// WithHttps uses HTTPS with certificate verification enabled.
+func WithHttps() *option.ProtocolOption {
+	return option.NewProtocolOption("https", false)
+}
+
+// WithHttpsInsecure uses HTTPS and skips TLS certificate verification.
+func WithHttpsInsecure() *option.ProtocolOption {
+	return option.NewProtocolOption("https", true)
+}
+
+// WithHttpsCA uses HTTPS and verifies the server certificate against the provided CA pool.
+func WithHttpsCA(certPool *x509.CertPool) *option.ProtocolOption {
+	return option.NewProtocolOptionWithCertPool("https", certPool)
+}
+
+// WithHttpsClientCert uses HTTPS with a client certificate for mutual TLS (mTLS).
+// certPool may be nil to use the system CA pool for server certificate verification.
+func WithHttpsClientCert(clientCert tls.Certificate, certPool *x509.CertPool) *option.ProtocolOption {
+	return option.NewProtocolOptionWithClientCert("https", certPool, clientCert)
 }

@@ -17,6 +17,7 @@
 package util
 
 import (
+	"crypto/tls"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -26,8 +27,20 @@ import (
 	"github.com/oceanbase/obshell-sdk-go/model"
 )
 
-func GetInfo(server string) (*model.AgentRunStatus, error) {
-	resp, err := http.Get(fmt.Sprintf("http://%s/api/v1/info", server))
+func newHTTPClient(tlsConfig *tls.Config) *http.Client {
+	if tlsConfig != nil {
+		return &http.Client{
+			Transport: &http.Transport{
+				TLSClientConfig: tlsConfig,
+			},
+		}
+	}
+	return http.DefaultClient
+}
+
+func GetInfoWithOptions(server, protocol string, tlsConfig *tls.Config) (*model.AgentRunStatus, error) {
+	client := newHTTPClient(tlsConfig)
+	resp, err := client.Get(fmt.Sprintf("%s://%s/api/v1/info", protocol, server))
 	if err != nil {
 		log.Warn("Failed to get version: Network error: %v", err)
 		return nil, err
@@ -51,8 +64,9 @@ func GetInfo(server string) (*model.AgentRunStatus, error) {
 	return &response.Data, nil
 }
 
-func GetIdentity(server string) (model.AgentIdentity, error) {
-	resp, err := http.Get(fmt.Sprintf("http://%s/api/v1/info", server))
+func GetIdentityWithOptions(server, protocol string, tlsConfig *tls.Config) (model.AgentIdentity, error) {
+	client := newHTTPClient(tlsConfig)
+	resp, err := client.Get(fmt.Sprintf("%s://%s/api/v1/info", protocol, server))
 	if err != nil {
 		return model.UNIDENTIFIED, err
 	}

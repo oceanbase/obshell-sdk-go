@@ -84,7 +84,7 @@ func (auth *PasswordAuthMethod) Reset() {
 
 func (auth *PasswordAuthMethod) checkIdentity(req request.Request) error {
 	if !auth.identityCheck {
-		identity, err := util.GetIdentity(req.GetServer())
+		identity, err := util.GetIdentityWithOptions(req.GetServer(), req.GetProtocol(), req.GetTLSConfig())
 		if err != nil {
 			return err
 		}

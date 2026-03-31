@@ -17,6 +17,7 @@
 package sdk
 
 import (
+	"crypto/tls"
 	"fmt"
 	"reflect"
 
@@ -35,6 +36,8 @@ type Client struct {
 	httpClient *resty.Client
 	host       string
 	port       int
+	protocol   string
+	tlsConfig  *tls.Config
 
 	auth          auth.Auther
 	candidateAuth auth.Auther
@@ -56,7 +59,14 @@ func NewClient(host string, port int, options ...option.Optioner) (c *Client, er
 		switch opt.Type() {
 		case option.AUTH_OPT:
 			c.auth = opt.Value().(auth.Auther)
+		case option.PROTOCOL_OPT:
+			protocolOpt := opt.Value().(*option.ProtocolOption)
+			c.protocol = protocolOpt.GetProtocol()
+			c.tlsConfig = protocolOpt.TLSConfig()
 		}
+	}
+	if c.tlsConfig != nil {
+		c.httpClient.SetTLSClientConfig(c.tlsConfig)
 	}
 	return
 }
@@ -67,6 +77,7 @@ func NewClientWithServer(host string, port int) (*Client, error) {
 		auth:       auth.NewPasswordAuth(""),
 		host:       host,
 		port:       port,
+		protocol:   "http",
 	}
 	return c, nil
 }
@@ -124,8 +135,12 @@ func (c *Client) GetPort() int {
 	return c.port
 }
 
+func (c *Client) GetProtocol() string {
+	return c.protocol
+}
+
 func (c *Client) confirmAuthVersion() error {
-	agentInfo, err := util.GetInfo(c.GetServer())
+	agentInfo, err := util.GetInfoWithOptions(c.GetServer(), c.protocol, c.tlsConfig)
 	if err != nil {
 		return errors.Wrap(err, "get version failed")
 	}
@@ -179,7 +194,7 @@ func (c *Client) tryCandidateAuth(request request.Request, response responselib.
 		return false
 	}
 
-	agentInfo, err := util.GetInfo(c.GetServer())
+	agentInfo, err := util.GetInfoWithOptions(c.GetServer(), c.protocol, c.tlsConfig)
 	if err != nil {
 		return false
 	}
@@ -206,6 +221,9 @@ func (c *Client) tryCandidateAuth(request request.Request, response responselib.
 }
 
 func (c *Client) Execute(request request.Request, response responselib.Response) (err error) {
+	request.SetProtocol(c.protocol)
+	request.SetTLSConfig(c.tlsConfig)
+
 	if c.auth.GetVersion() == "" {
 		if err = c.confirmAuthVersion(); err != nil {
 			return err
@@ -264,7 +282,7 @@ func (c *Client) realExecute(req request.Request, response responselib.Response)
 	}
 	req.SetContext(requestContext)
 
-	r := req.BuildHttpRequest(requestContext).
+	r := req.BuildHttpRequest(requestContext, c.httpClient).
 		SetError(response).
 		SetResult(response)
 
