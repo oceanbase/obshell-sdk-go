@@ -21,6 +21,7 @@ import (
 	"time"
 
 	"github.com/oceanbase/obshell-sdk-go/internal/util"
+	"github.com/oceanbase/obshell-sdk-go/model"
 	"github.com/oceanbase/obshell-sdk-go/sdk/request"
 )
 
@@ -28,9 +29,9 @@ type PasswordAuthV1 struct {
 	*PasswordAuthMethod
 }
 
-func newPasswordAuthV1(pwd string, letftime time.Duration) *PasswordAuthV1 {
+func newPasswordAuthV1(pwd string, letftime time.Duration, prefetched bool, identity model.AgentIdentity) *PasswordAuthV1 {
 	return &PasswordAuthV1{
-		PasswordAuthMethod: newPasswordAuthMethod(pwd, letftime),
+		PasswordAuthMethod: newPasswordAuthMethod(pwd, letftime, prefetched, identity),
 	}
 }
 

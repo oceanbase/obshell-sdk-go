@@ -25,6 +25,7 @@ import (
 	"github.com/pkg/errors"
 
 	"github.com/oceanbase/obshell-sdk-go/internal/util"
+	"github.com/oceanbase/obshell-sdk-go/model"
 	"github.com/oceanbase/obshell-sdk-go/sdk/auth"
 	"github.com/oceanbase/obshell-sdk-go/sdk/option"
 	"github.com/oceanbase/obshell-sdk-go/sdk/request"
@@ -139,11 +140,21 @@ func (c *Client) GetProtocol() string {
 	return c.protocol
 }
 
+func (c *Client) applyAgentInfo(auther auth.Auther, agentInfo *model.AgentRunStatus) {
+	if auther == nil || agentInfo == nil {
+		return
+	}
+	if passwordAuth, ok := auther.(*auth.PasswordAuth); ok {
+		passwordAuth.SetAgentIdentity(agentInfo.Identity)
+	}
+}
+
 func (c *Client) confirmAuthVersion() error {
 	agentInfo, err := util.GetInfoWithOptions(c.GetServer(), c.protocol, c.tlsConfig)
 	if err != nil {
 		return errors.Wrap(err, "get version failed")
 	}
+	c.applyAgentInfo(c.auth, agentInfo)
 
 	if !c.auth.IsAutoSelectVersion() {
 		if !c.auth.IsSupported(c.auth.GetVersion()) {
@@ -198,6 +209,8 @@ func (c *Client) tryCandidateAuth(request request.Request, response responselib.
 	if err != nil {
 		return false
 	}
+	c.applyAgentInfo(c.auth, agentInfo)
+	c.applyAgentInfo(c.candidateAuth, agentInfo)
 
 	// Check if the agent version is less than or equal to 4.2.4.
 	if auth.VERSION_4_2_4.BeforeOrEquals(agentInfo.Version) {
