@@ -141,8 +141,8 @@ func RSAEncrypt(raw []byte, pk string) (string, error) {
 		b, err := rsa.EncryptPKCS1v15(rand.Reader, pub, raw)
 		return base64.StdEncoding.EncodeToString(b), errors.Wrap(err, "encrypt failed")
 	}
-	// 分段加密
-	blockSize := 512/8 - 11
+	// PKCS#1 v1.5 padding overhead is 11 bytes
+	blockSize := pub.N.BitLen()/8 - 11
 	numBlocks := (len(raw) + blockSize - 1) / blockSize
 	ciphertext := make([]byte, 0)
 	for i := 0; i < numBlocks; i++ {

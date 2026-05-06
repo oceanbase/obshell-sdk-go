@@ -28,23 +28,20 @@ func WithPasswordAuth(pwd string) *auth.PasswordAuthOption {
 	return auth.WithPasswordAuth(pwd)
 }
 
-// WithHttps uses HTTPS with certificate verification enabled.
-func WithHttps() *option.ProtocolOption {
-	return option.NewProtocolOption("https", false)
-}
-
-// WithHttpsInsecure uses HTTPS and skips TLS certificate verification.
-func WithHttpsInsecure() *option.ProtocolOption {
-	return option.NewProtocolOption("https", true)
-}
-
-// WithHttpsCA uses HTTPS and verifies the server certificate against the provided CA pool.
-func WithHttpsCA(certPool *x509.CertPool) *option.ProtocolOption {
-	return option.NewProtocolOptionWithCertPool("https", certPool)
-}
-
-// WithHttpsClientCert uses HTTPS with a client certificate for mutual TLS (mTLS).
-// certPool may be nil to use the system CA pool for server certificate verification.
-func WithHttpsClientCert(clientCert tls.Certificate, certPool *x509.CertPool) *option.ProtocolOption {
-	return option.NewProtocolOptionWithClientCert("https", certPool, clientCert)
+// WithHttps configures HTTPS behavior via parameters.
+//
+// - insecureSkipVerify: when true, skips verification of the server certificate.
+// - certPool: when non-nil, verifies the server certificate against this CA pool.
+// - clientCert: when non-nil, sends the client certificate (mTLS).
+func WithHttps(insecureSkipVerify bool, certPool *x509.CertPool, clientCert *tls.Certificate) *option.ProtocolOption {
+	if clientCert != nil {
+		if insecureSkipVerify && certPool == nil {
+			return option.NewProtocolOptionWithClientCertInsecure("https", *clientCert)
+		}
+		return option.NewProtocolOptionWithClientCert("https", certPool, *clientCert)
+	}
+	if certPool != nil {
+		return option.NewProtocolOptionWithCertPool("https", certPool)
+	}
+	return option.NewProtocolOption("https", insecureSkipVerify)
 }

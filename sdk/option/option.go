@@ -90,6 +90,15 @@ func NewProtocolOptionWithClientCert(protocol string, certPool *x509.CertPool, c
 	}
 }
 
+// NewProtocolOptionWithClientCertInsecure uses HTTPS with a client certificate but does not verify the server certificate.
+func NewProtocolOptionWithClientCertInsecure(protocol string, clientCert tls.Certificate) *ProtocolOption {
+	return &ProtocolOption{
+		protocol:           protocol,
+		insecureSkipVerify: true,
+		clientCert:         &clientCert,
+	}
+}
+
 func (o *ProtocolOption) Type() OptionType   { return PROTOCOL_OPT }
 func (o *ProtocolOption) Name() string       { return "protocol" }
 func (o *ProtocolOption) Value() interface{} { return o }
