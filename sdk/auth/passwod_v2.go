@@ -31,6 +31,7 @@ import (
 	"github.com/pkg/errors"
 
 	"github.com/oceanbase/obshell-sdk-go/internal/util"
+	"github.com/oceanbase/obshell-sdk-go/model"
 	"github.com/oceanbase/obshell-sdk-go/sdk/request"
 )
 
@@ -38,9 +39,9 @@ type PasswordAuthV2 struct {
 	*PasswordAuthMethod
 }
 
-func newPasswordAuthV2(pwd string, letftime time.Duration) *PasswordAuthV2 {
+func newPasswordAuthV2(pwd string, letftime time.Duration, prefetched bool, identity model.AgentIdentity) *PasswordAuthV2 {
 	return &PasswordAuthV2{
-		PasswordAuthMethod: newPasswordAuthMethod(pwd, letftime),
+		PasswordAuthMethod: newPasswordAuthMethod(pwd, letftime, prefetched, identity),
 	}
 }
 

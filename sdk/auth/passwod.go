@@ -29,8 +29,10 @@ import (
 // It is used to authenticate with password.
 type PasswordAuth struct {
 	*BaseAuth
-	pwd      string
-	letftime time.Duration
+	pwd                string
+	letftime           time.Duration
+	prefetchedInfo     bool
+	prefetchedIdentity model.AgentIdentity
 }
 
 func NewPasswordAuth(pwd string) *PasswordAuth {
@@ -52,6 +54,11 @@ func (auth *PasswordAuth) GetLifetime() time.Duration {
 	return auth.letftime
 }
 
+func (auth *PasswordAuth) SetAgentIdentity(identity model.AgentIdentity) {
+	auth.prefetchedIdentity = identity
+	auth.prefetchedInfo = true
+}
+
 func (auth *PasswordAuth) Auth(request request.Request, context *request.Context) error {
 	method := auth.method
 	if method != nil {
@@ -60,9 +67,9 @@ func (auth *PasswordAuth) Auth(request request.Request, context *request.Context
 
 	switch auth.GetVersion() {
 	case AUTH_V1:
-		auth.method = newPasswordAuthV1(auth.pwd, auth.GetLifetime())
+		auth.method = newPasswordAuthV1(auth.pwd, auth.GetLifetime(), auth.prefetchedInfo, auth.prefetchedIdentity)
 	case AUTH_V2:
-		auth.method = newPasswordAuthV2(auth.pwd, auth.GetLifetime())
+		auth.method = newPasswordAuthV2(auth.pwd, auth.GetLifetime(), auth.prefetchedInfo, auth.prefetchedIdentity)
 	default:
 		return ErrNotSupportedAuthVersion
 	}
@@ -71,34 +78,46 @@ func (auth *PasswordAuth) Auth(request request.Request, context *request.Context
 }
 
 type PasswordAuthMethod struct {
-	pwd           string
-	pk            string
-	identityCheck bool
-	letftime      time.Duration
+	pwd                string
+	pk                 string
+	identityCheck      bool
+	letftime           time.Duration
+	prefetchedIdentity model.AgentIdentity
 }
 
 func (auth *PasswordAuthMethod) Reset() {
 	auth.pk = ""
 	auth.identityCheck = false
+	auth.prefetchedIdentity = model.UNIDENTIFIED
 }
 
 func (auth *PasswordAuthMethod) checkIdentity(req request.Request) error {
 	if !auth.identityCheck {
-		identity, err := util.GetIdentityWithOptions(req.GetServer(), req.GetProtocol(), req.GetTLSConfig())
-		if err != nil {
-			return err
+		identity := auth.prefetchedIdentity
+		if identity == model.UNIDENTIFIED {
+			var err error
+			identity, err = util.GetIdentityWithOptions(req.GetServer(), req.GetProtocol(), req.GetTLSConfig())
+			if err != nil {
+				return err
+			}
 		}
 		if identity == model.SINGLE {
 			auth.pwd = ""
 			log.Warn("Identity is single, password is not needed.")
 		}
 		auth.identityCheck = true
+		auth.prefetchedIdentity = model.UNIDENTIFIED
 	}
 	return nil
 }
-func newPasswordAuthMethod(pwd string, letftime time.Duration) *PasswordAuthMethod {
+
+func newPasswordAuthMethod(pwd string, letftime time.Duration, prefetched bool, identity model.AgentIdentity) *PasswordAuthMethod {
+	if !prefetched {
+		identity = model.UNIDENTIFIED
+	}
 	return &PasswordAuthMethod{
-		pwd:      pwd,
-		letftime: letftime,
+		pwd:                pwd,
+		letftime:           letftime,
+		prefetchedIdentity: identity,
 	}
 }
